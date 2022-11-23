@@ -5,7 +5,6 @@ author:
 output:
   github_document:
     pandoc_args: ["--lua-filter=pandoc-quotes.lua"]
-always_allow_html: true
 lang: hu
 editor_options:
   chunk_output_type: console
@@ -15,12 +14,16 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, fig.width = 12, dpi = 300, dev = "ragg_png")
 locs <- readRDS("locs.rds")
 locs$FileNAME <- gsub("-", "", gsub(" ", "", iconv(locs$NAME, to = "ASCII//TRANSLIT")))
+baseurl <- "https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/blob/main/results/"
 ```
 
 ```{r}
 knitr::kable(data.frame(`Település` = locs$NAME,
-                        `Izokrón vonalak nélkül` = paste0("[PDF](", locs$FileNAME, "), [PNG](", locs$FileNAME, ")"),
-                        `Izokrón vonalakkal` = paste0("[PDF](", locs$FileNAME, "), [PNG](", locs$FileNAME, ")"),
+                        `Izokrón vonalak nélkül` = paste0("[PDF](", baseurl, locs$FileNAME, ".pdf), [PNG](",
+                                                          baseurl, locs$FileNAME, ".png)"),
+                        `Izokrón vonalakkal` = paste0("[PDF](", baseurl, locs$FileNAME,
+                                                      "_izokron.pdf), [PNG](", baseurl, locs$FileNAME,
+                                                      "_izokron.png)"),
                         check.names = FALSE))
 ```
 

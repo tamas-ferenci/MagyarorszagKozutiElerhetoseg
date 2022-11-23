@@ -35,7 +35,7 @@ Ezekre a kérdésekre fogok a jelen esszében megpróbálni válaszolni.
 
 A problémakört szép nevén _közúti elérhetőségnek_ lehetne nevezni. Valójában nincs szó nagy újdonságról, sokaknak ismerős lehet a régi autóstérképekről a kis táblázat, mely a nagy városok között tüntette fel -- táblázat alakban elrendezve az összes lehetséges pár között -- a távolságot. Ugyanezt fogjuk most megtenni, csak kihasználva az informatika lehetőségeit sokkal alaposabban és átfogóbban, valamint a kapott eredményeknek többféle alkalmazását is ki fogjuk próbálni.
 
-![Közúti eljutási idők Budapestről az ország egyes pontjaiba](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png)
+![Közúti eljutási idők Budapestről az ország egyes pontjaiba](README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png)
 
 ## Módszertan
 
@@ -45,7 +45,7 @@ Több útvonaltervező alkalmazás van széles körű használatban, azonban nem
 - Az egész ország térképe letölthető (erre a célra a [Geofabrik](https://download.geofabrik.de/) oldalát használtam), így minden számítás elvégezhető off-line, a helyi számítógépen, internet szüksége nélkül.
 - Elérhető hozzá olyan program, amely nagyon jó tulajdonságú és gyors útvonaltervezést végez a térkép alapján, ez az [OSRM](http://project-osrm.org/) (Open Source Routing Machine), ami ráadásul ingyenesen és nyílt forráskódú.
 
-A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit külön pontban tárgyalom meg.
+A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit [külön pontban](https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei) tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag _közúti_ eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés bármilyen más közlekedési módra, legyen az bicikli, gyaloglás, vagy akár tömegközlekedés. Ezek vizsgálata továbbfejlesztési lehetőség; annyit jegyzek meg, hogy az előbbiek vizsgálata nem nehéz, hiszen pontosan ugyanaz a térkép, és ugyanaz az útvonaltervező használható (lényegében csak az ún. profilt kell lecserélni az OSRM-ben), az utóbbi azonban zűrösebb, hiszen a menetrendre is szükség van a vizsgálatához.
 
@@ -78,6 +78,7 @@ durationsLong <- as.data.table(reshape2::melt(durations, value.name = "Duration"
 durationsLong$Var1 <- as.character(levels(durationsLong$Var1))[durationsLong$Var1]
 durationsLong$Var2 <- as.character(levels(durationsLong$Var2))[durationsLong$Var2]
 fwrite(durationsLong, "durationsLong.csv", dec = ",", sep = ";", bom = TRUE)
+if(!file.exists("durationsLong.zip")) zip("durationsLong.zip", "durationsLong.csv")
 knitr::kable(head(durationsLong))
 
 ```
@@ -130,7 +131,7 @@ ggsave("BudapestKozutiEljutasiIdo.pdf", p, width = 16, height = 9, device = cair
 p
 ```
 
-Ha egy szubjektív kiszólást tehetek, ez az ábra szerintem önmagában is szép: mint ahogy az erek hálózzák be a testet. (Ha más is így gondolná, letöltheti jó minőségű [PDF formátumban](TODO) is ugyanezt az ábrát!)
+Ha egy szubjektív kiszólást tehetek, ez az ábra szerintem önmagában is szép: mint ahogy az erek hálózzák be a testet. (Ha más is így gondolná, letöltheti jó minőségű [PDF formátumban](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/BudapestKozutiEljutasiIdo.pdf) is ugyanezt az ábrát!)
 
 Mindazonáltal az ábra még tovább is fejleszthető. Vegyünk most egy másik települést példának, a Borsod-Abaúj-Zemplén megyei [Csobádot](https://hu.wikipedia.org/wiki/Csob%C3%A1d). Az előbbi ábrát egészítsük ki egy ponttal, ahol a település van, de ami még fontosabb: jelöljük meg azokat a pontokat, amelyek adott időn belül, például 1 órán belül, 2 órán belül stb. elérhetőek a vizsgált településünkből. E területek határát szokás izokrón görbének nevezni (kb. azonos idő alatt elérhető): adott idő alatt eddig lehet eljutni a településből. Avagy, fordítva megfogalmazva -- minthogy a dolog szimmetrikus -- innen lehet adott idő alatt eljutni a településre. Technikailag egy dologra kell figyelni, ez pedig az, hogy az eredeti interpoláció nagyon finom térbeli felbontású, ami jó, hiszen ettől szép sima a térkép, viszont most nem szerencsés, mert ha ez alapján húzzuk meg ezeket a kontúrvonalakat, akkor azok nagyon szaggatottak lesznek, hiszen ide-oda fog ugrálni, hogy pontosan hol van az 1 óra határa (és a finom felbontás miatt ezt jól tudja követni). Úgyhogy ehhez érdemes egy durvább felbontású interpolációt készíteni, és az alapján behúzni az izokrón vonalakat:
 
@@ -443,7 +444,7 @@ Ha ez megvan, akkor le is futtathatjuk a Concorde-ot ezen az adatbázison:
 
     ./concorde SymmDurationMatTSP.tsp > SymmDurationMatTSP.log
 
-Az eredményül kapott log fájlt [elérhetővé tettem](TODO); ebből mellesleg az is látszik, hogy a teljes futási idő nálam 69221 másodperc, azaz kicsit több mint 19 óra volt.
+Az eredményül kapott log fájlt [elérhetővé tettem](SymmDurationMatTSP.log); ebből mellesleg az is látszik, hogy a teljes futási idő nálam 69221 másodperc, azaz kicsit több mint 19 óra volt.
 
 De mi az optimális útvonal? Ez a `.sol` fájlból olvasható ki, egyedül arra kell figyelni, hogy a Concorde 0-tól kezdi a pontok számozását (magyarán 1-et hozzá kell adni minden számhoz, hogy megkapjuk a bemenetben, jelen esetben a `locs`-ban szereplő elemekre a hivatkozást). Nem csigázom tovább a kedélyeket, íme a válasz:
 
@@ -465,7 +466,7 @@ ggplot(geodata) + geom_sf(color = NA) +
   metR::scale_y_latitude(ticks = 0.5, expand = waiver())
 ```
 
-A teljes itinert [innen](TODO) letölthetővé tettem -- az érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
+A teljes itinert [innen](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/TSPsolItinary.csv) letölthetővé tettem -- az érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
 
 Mivel körútról van szó, természetesen bárhol be lehet kapcsolódni, az esetleges, hogy az itiner pont Abán kezdődik. De ha valaki itt indul, akkor látható, hogy először Sárkeresztúrra kell vezetnie, ez kevesebb mint 10 perc, utána mehet Sárszentágotára (5 perc), és így tovább, míg végül, 3177 település érintése után Tácról fog újra visszaérni Abára egy bő 20 perces vezetés után.
 
@@ -595,11 +596,11 @@ A biztonsági ellenőrzésen túl azért volt hasznos a Helységnévtár letölt
 
 Zárásként nyerjük ki a települések koordinátáit, hiszen az útvonaltervezéshez majd ehhez lesz szükségünk. A térkép, mint fent láttuk is, minden településhez egy kis területet rendelt; legyen a koordináta ennek a középpontja:
 
-```{r}
+```{r, warning = FALSE}
 locs <- data.frame(NAME = geodata$NAME, st_coordinates(st_centroid(geodata)))
 saveRDS(locs, "locs.rds")
 write.csv(locs[, c("X", "Y")], "osrmlocs.csv", row.names = FALSE)
-head(locs)
+knitr::kable(head(locs))
 ```
 
 ### Az OSRM letöltése és telepítése

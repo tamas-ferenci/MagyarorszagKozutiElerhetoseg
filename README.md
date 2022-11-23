@@ -79,7 +79,7 @@ informatika lehetőségeit sokkal alaposabban és átfogóbban, valamint a
 kapott eredményeknek többféle alkalmazását is ki fogjuk próbálni.
 
 ![Közúti eljutási idők Budapestről az ország egyes
-pontjaiba](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png)
+pontjaiba](README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png)
 
 ## Módszertan
 
@@ -103,7 +103,9 @@ több fontos előnnyel is bír:
   ráadásul ingyenesen és nyílt forráskódú.
 
 A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a
-technikai részleteit külön pontban tárgyalom meg.
+technikai részleteit [külön
+pontban](https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei)
+tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag *közúti*
 eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés
@@ -327,6 +329,7 @@ durationsLong <- as.data.table(reshape2::melt(durations, value.name = "Duration"
 durationsLong$Var1 <- as.character(levels(durationsLong$Var1))[durationsLong$Var1]
 durationsLong$Var2 <- as.character(levels(durationsLong$Var2))[durationsLong$Var2]
 fwrite(durationsLong, "durationsLong.csv", dec = ",", sep = ";", bom = TRUE)
+if(!file.exists("durationsLong.zip")) zip("durationsLong.zip", "durationsLong.csv")
 knitr::kable(head(durationsLong))
 ```
 
@@ -587,7 +590,9 @@ p
 
 Ha egy szubjektív kiszólást tehetek, ez az ábra szerintem önmagában is
 szép: mint ahogy az erek hálózzák be a testet. (Ha más is így gondolná,
-letöltheti jó minőségű [PDF formátumban](TODO) is ugyanezt az ábrát!)
+letöltheti jó minőségű [PDF
+formátumban](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/BudapestKozutiEljutasiIdo.pdf)
+is ugyanezt az ábrát!)
 
 Mindazonáltal az ábra még tovább is fejleszthető. Vegyünk most egy másik
 települést példának, a Borsod-Abaúj-Zemplén megyei
@@ -1829,9 +1834,10 @@ adatbázison:
 
     ./concorde SymmDurationMatTSP.tsp > SymmDurationMatTSP.log
 
-Az eredményül kapott log fájlt [elérhetővé tettem](TODO); ebből
-mellesleg az is látszik, hogy a teljes futási idő nálam 69221 másodperc,
-azaz kicsit több mint 19 óra volt.
+Az eredményül kapott log fájlt [elérhetővé
+tettem](SymmDurationMatTSP.log); ebből mellesleg az is látszik, hogy a
+teljes futási idő nálam 69221 másodperc, azaz kicsit több mint 19 óra
+volt.
 
 De mi az optimális útvonal? Ez a `.sol` fájlból olvasható ki, egyedül
 arra kell figyelni, hogy a Concorde 0-tól kezdi a pontok számozását
@@ -1859,8 +1865,10 @@ ggplot(geodata) + geom_sf(color = NA) +
 
 ![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
-A teljes itinert [innen](TODO) letölthetővé tettem – az érdeklődők ez
-alapján már neki is vághatnak hazánk felfedezésének!
+A teljes itinert
+[innen](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/TSPsolItinary.csv)
+letölthetővé tettem – az érdeklődők ez alapján már neki is vághatnak
+hazánk felfedezésének!
 
 Mivel körútról van szó, természetesen bárhol be lehet kapcsolódni, az
 esetleges, hogy az itiner pont Abán kezdődik. De ha valaki itt indul,
@@ -2070,24 +2078,94 @@ koordináta ennek a középpontja:
 
 ``` r
 locs <- data.frame(NAME = geodata$NAME, st_coordinates(st_centroid(geodata)))
-```
-
-    ## Warning in st_centroid.sf(geodata): st_centroid assumes attributes are constant
-    ## over geometries of x
-
-``` r
 saveRDS(locs, "locs.rds")
 write.csv(locs[, c("X", "Y")], "osrmlocs.csv", row.names = FALSE)
-head(locs)
+knitr::kable(head(locs))
 ```
 
-    ##         NAME        X        Y
-    ## 1        Aba 18.51912 47.06457
-    ## 2 Abádszalók 20.62460 47.45214
-    ## 3   Abaliget 18.09622 46.14251
-    ## 4     Abasár 20.01678 47.81171
-    ## 5 Abaújalpár 21.25843 48.30330
-    ## 6   Abaújkér 21.19252 48.31008
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+NAME
+</th>
+<th style="text-align:right;">
+X
+</th>
+<th style="text-align:right;">
+Y
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Aba
+</td>
+<td style="text-align:right;">
+18.51912
+</td>
+<td style="text-align:right;">
+47.06457
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Abádszalók
+</td>
+<td style="text-align:right;">
+20.62460
+</td>
+<td style="text-align:right;">
+47.45214
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Abaliget
+</td>
+<td style="text-align:right;">
+18.09622
+</td>
+<td style="text-align:right;">
+46.14251
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Abasár
+</td>
+<td style="text-align:right;">
+20.01678
+</td>
+<td style="text-align:right;">
+47.81171
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Abaújalpár
+</td>
+<td style="text-align:right;">
+21.25843
+</td>
+<td style="text-align:right;">
+48.30330
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Abaújkér
+</td>
+<td style="text-align:right;">
+21.19252
+</td>
+<td style="text-align:right;">
+48.31008
+</td>
+</tr>
+</tbody>
+</table>
 
 ### Az OSRM letöltése és telepítése
 
