@@ -1,0 +1,26 @@
+---
+title: "Magyar települések közúti elérhetősége -- településszintű térképek"
+author:
+  - Ferenci Tamás (tamas.ferenci@medstat.hu)
+output:
+  github_document:
+    pandoc_args: ["--lua-filter=pandoc-quotes.lua"]
+always_allow_html: true
+lang: hu
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 12, dpi = 300, dev = "ragg_png")
+locs <- readRDS("locs.rds")
+locs$FileNAME <- gsub("-", "", gsub(" ", "", iconv(locs$NAME, to = "ASCII//TRANSLIT")))
+```
+
+```{r}
+knitr::kable(data.frame(`Település` = locs$NAME,
+                        `Izokrón vonalak nélkül` = paste0("[PDF](", locs$FileNAME, "), [PNG](", locs$FileNAME, ")"),
+                        `Izokrón vonalakkal` = paste0("[PDF](", locs$FileNAME, "), [PNG](", locs$FileNAME, ")"),
+                        check.names = FALSE))
+```
+
