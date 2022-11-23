@@ -1,0 +1,28 @@
+---
+title: "Magyar települések közúti elérhetősége -- településszintű térképek (L-Zs)"
+author:
+  - Ferenci Tamás (tamas.ferenci@medstat.hu)
+output: github_document
+lang: hu
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 12, dpi = 300, dev = "ragg_png")
+locs <- readRDS("locs.rds")
+locs$FileNAME <- gsub("-", "", gsub(" ", "", iconv(locs$NAME, to = "ASCII//TRANSLIT")))
+baseurl <- "maps/"
+```
+
+```{r}
+knitr::kable(data.frame(`Település` = locs$NAME,
+                        `Izokrón vonalak nélkül` = paste0("[PDF](", baseurl, locs$FileNAME, ".pdf), [PNG](",
+                                                          baseurl, locs$FileNAME, ".png)"),
+                        `Izokrón vonalakkal` = paste0("[PDF](", baseurl, locs$FileNAME,
+                                                      "_izokron.pdf), [PNG](", baseurl, locs$FileNAME,
+                                                      "_izokron.png)"),
+                        check.names = FALSE)[(sum(table(substring(locs$NAME, 1, 1))[
+                          names(table(substring(locs$NAME, 1, 1)))<="K"])+1):length(locs$NAME),],
+             row.names = FALSE)
+```

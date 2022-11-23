@@ -1,5 +1,5 @@
 ---
-title: "Magyar települések közúti elérhetősége -- településszintű térképek"
+title: "Magyar települések közúti elérhetősége -- településszintű térképek (A-K)"
 author:
   - Ferenci Tamás (tamas.ferenci@medstat.hu)
 output: github_document
@@ -22,5 +22,6 @@ knitr::kable(data.frame(`Település` = locs$NAME,
                         `Izokrón vonalakkal` = paste0("[PDF](", baseurl, locs$FileNAME,
                                                       "_izokron.pdf), [PNG](", baseurl, locs$FileNAME,
                                                       "_izokron.png)"),
-                        check.names = FALSE))
+                        check.names = FALSE)[1:sum(table(substring(locs$NAME, 1, 1))[
+                          names(table(substring(locs$NAME, 1, 1)))<="K"]),])
 ```
