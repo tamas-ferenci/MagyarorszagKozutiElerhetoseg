@@ -1681,7 +1681,7 @@ betegek átlagosan a leggyorsabban beérjenek a kórházba? Ez a kérdés
 persze nyilvánvaló marhaság (nem egyetlen kórház lesz az országban,
 azokat nem úgy telepítik, hogy egyszerűen egy ilyen átlagos elérési időt
 minimalizáljanak, léteznek orvosi szakterületek is a világon,
-progresszivitási szinte stb. stb.), de mégis, ennek a megértése az
+progresszivitási szintek stb. stb.), de mégis, ennek a megértése az
 alaplépés a valóéletbeli problémák megoldásához. Ami igenis előjöhet egy
 kórház vagy mentőállomás telepítésekor (pláne, ha ez csak egy szempont a
 sok között, pláne, ha kisebb területi egységben gondolkozunk), de
