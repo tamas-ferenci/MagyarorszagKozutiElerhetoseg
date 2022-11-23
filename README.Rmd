@@ -228,7 +228,7 @@ for(loc in locs$NAME) {
 }
 ```
 
-Az eredményeket egy [külön oldalon](TelepulesTerkepek.html) tettem elérhetővé: itt bárki letöltheti tehát minden magyar településre a fenti közúti eljutási idő térképeket!
+Az eredményeket egy külön oldalon (a település nevének első betűje szerint: [A-K](TelepulesTerkepekAK.md) és [L-Zs](TelepulesTerkepekLZs.md)) tettem elérhetővé: itt bárki letöltheti tehát minden magyar településre a fenti közúti eljutási idő térképeket!
 
 ## Kis történelmi kitérő az izokrón térképek kapcsán
 
