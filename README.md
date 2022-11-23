@@ -104,7 +104,7 @@ több fontos előnnyel is bír:
 
 A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a
 technikai részleteit [külön
-pontban](https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei)
+pontban](#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei)
 tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag *közúti*
@@ -417,8 +417,9 @@ Aba
 </tbody>
 </table>
 
-Az adatállomány [ezen a linken](TODO) külön is elérhetővé tettem CSV
-formátumban, hogy bárki tetszőleges saját elemzéshez is felhasználhassa.
+Az adatállomány [ezen a linken](durationsLong.zip) külön is elérhetővé
+tettem tömörített CSV formátumban, hogy bárki tetszőleges saját
+elemzéshez is felhasználhassa.
 
 Most már nekiállhatunk a munkának! Első feladatként nézzük meg, hogy
 milyen messze vannak (menetidőben) a magyar települések egy bizonyos
@@ -752,9 +753,9 @@ for(loc in locs$NAME) {
 }
 ```
 
-Az eredményeket egy [külön oldalon](TODO) tettem elérhetővé: itt bárki
-letöltheti tehát minden magyar településre a fenti közúti eljutási idő
-térképeket!
+Az eredményeket egy [külön oldalon](TelepulesTerkepek.html) tettem
+elérhetővé: itt bárki letöltheti tehát minden magyar településre a fenti
+közúti eljutási idő térképeket!
 
 ## Kis történelmi kitérő az izokrón térképek kapcsán
 
@@ -1865,10 +1866,8 @@ ggplot(geodata) + geom_sf(color = NA) +
 
 ![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
-A teljes itinert
-[innen](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/TSPsolItinary.csv)
-letölthetővé tettem – az érdeklődők ez alapján már neki is vághatnak
-hazánk felfedezésének!
+A teljes itinert [innen](TSPsolItinary.csv) letölthetővé tettem – az
+érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
 
 Mivel körútról van szó, természetesen bárhol be lehet kapcsolódni, az
 esetleges, hogy az itiner pont Abán kezdődik. De ha valaki itt indul,

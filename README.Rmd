@@ -45,7 +45,7 @@ Több útvonaltervező alkalmazás van széles körű használatban, azonban nem
 - Az egész ország térképe letölthető (erre a célra a [Geofabrik](https://download.geofabrik.de/) oldalát használtam), így minden számítás elvégezhető off-line, a helyi számítógépen, internet szüksége nélkül.
 - Elérhető hozzá olyan program, amely nagyon jó tulajdonságú és gyors útvonaltervezést végez a térkép alapján, ez az [OSRM](http://project-osrm.org/) (Open Source Routing Machine), ami ráadásul ingyenesen és nyílt forráskódú.
 
-A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit [külön pontban](https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei) tárgyalom meg.
+A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit [külön pontban](#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei) tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag _közúti_ eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés bármilyen más közlekedési módra, legyen az bicikli, gyaloglás, vagy akár tömegközlekedés. Ezek vizsgálata továbbfejlesztési lehetőség; annyit jegyzek meg, hogy az előbbiek vizsgálata nem nehéz, hiszen pontosan ugyanaz a térkép, és ugyanaz az útvonaltervező használható (lényegében csak az ún. profilt kell lecserélni az OSRM-ben), az utóbbi azonban zűrösebb, hiszen a menetrendre is szükség van a vizsgálatához.
 
@@ -83,7 +83,7 @@ knitr::kable(head(durationsLong))
 
 ```
 
-Az adatállomány [ezen a linken](TODO) külön is elérhetővé tettem CSV formátumban, hogy bárki tetszőleges saját elemzéshez is felhasználhassa.
+Az adatállomány [ezen a linken](durationsLong.zip) külön is elérhetővé tettem tömörített CSV formátumban, hogy bárki tetszőleges saját elemzéshez is felhasználhassa.
 
 Most már nekiállhatunk a munkának! Első feladatként nézzük meg, hogy milyen messze vannak (menetidőben) a magyar települések egy bizonyos ponttól; legyen ez Budapest, 1. kerület (ha már a 0 kilométerkő itt van):
 
@@ -228,7 +228,7 @@ for(loc in locs$NAME) {
 }
 ```
 
-Az eredményeket egy [külön oldalon](TODO) tettem elérhetővé: itt bárki letöltheti tehát minden magyar településre a fenti közúti eljutási idő térképeket!
+Az eredményeket egy [külön oldalon](TelepulesTerkepek.html) tettem elérhetővé: itt bárki letöltheti tehát minden magyar településre a fenti közúti eljutási idő térképeket!
 
 ## Kis történelmi kitérő az izokrón térképek kapcsán
 
@@ -466,7 +466,7 @@ ggplot(geodata) + geom_sf(color = NA) +
   metR::scale_y_latitude(ticks = 0.5, expand = waiver())
 ```
 
-A teljes itinert [innen](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/TSPsolItinary.csv) letölthetővé tettem -- az érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
+A teljes itinert [innen](TSPsolItinary.csv) letölthetővé tettem -- az érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
 
 Mivel körútról van szó, természetesen bárhol be lehet kapcsolódni, az esetleges, hogy az itiner pont Abán kezdődik. De ha valaki itt indul, akkor látható, hogy először Sárkeresztúrra kell vezetnie, ez kevesebb mint 10 perc, utána mehet Sárszentágotára (5 perc), és így tovább, míg végül, 3177 település érintése után Tácról fog újra visszaérni Abára egy bő 20 perces vezetés után.
 

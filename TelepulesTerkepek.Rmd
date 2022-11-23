@@ -2,9 +2,7 @@
 title: "Magyar települések közúti elérhetősége -- településszintű térképek"
 author:
   - Ferenci Tamás (tamas.ferenci@medstat.hu)
-output:
-  github_document:
-    pandoc_args: ["--lua-filter=pandoc-quotes.lua"]
+output: html_document
 lang: hu
 editor_options:
   chunk_output_type: console
@@ -14,7 +12,7 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, fig.width = 12, dpi = 300, dev = "ragg_png")
 locs <- readRDS("locs.rds")
 locs$FileNAME <- gsub("-", "", gsub(" ", "", iconv(locs$NAME, to = "ASCII//TRANSLIT")))
-baseurl <- "https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/blob/main/results/"
+baseurl <- "https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/blob/main/maps/"
 ```
 
 ```{r}
@@ -26,4 +24,3 @@ knitr::kable(data.frame(`Település` = locs$NAME,
                                                       "_izokron.png)"),
                         check.names = FALSE))
 ```
-
