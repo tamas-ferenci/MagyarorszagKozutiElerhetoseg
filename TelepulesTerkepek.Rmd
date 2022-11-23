@@ -22,5 +22,5 @@ knitr::kable(data.frame(`Település` = locs$NAME,
                         `Izokrón vonalakkal` = paste0("[PDF](", baseurl, locs$FileNAME,
                                                       "_izokron.pdf), [PNG](", baseurl, locs$FileNAME,
                                                       "_izokron.png)"),
-                        check.names = FALSE)[1:10,])
+                        check.names = FALSE))
 ```
