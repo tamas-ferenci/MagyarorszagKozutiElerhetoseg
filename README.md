@@ -738,16 +738,16 @@ for(loc in locs$NAME) {
                                 aes(x = X, y = Y, z = Duration, label = after_stat(level)),
                                 inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")
   
-  ggsave(paste0("./results/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
+  ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
                                                               c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".png"), p, width = 16, height = 9)
-  ggsave(paste0("./results/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
+  ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
                                                               c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".pdf"), p, width = 16, height = 9, device = cairo_pdf)
-  ggsave(paste0("./results/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
+  ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
                                                               c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.png"), p1, width = 16, height = 9)
-  ggsave(paste0("./results/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
+  ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
                                                               c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.pdf"), p1, width = 16, height = 9, device = cairo_pdf)
 }
@@ -1761,10 +1761,10 @@ hogy egy kórháznál 1.51 óra volt.)
 
 ``` r
 ggplot(geodata) + geom_sf(color = NA) +
-  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[which.min(colSums((h[1:2]-t(locs[,2:3]))^2))],],
-                      inherit.aes = FALSE, color = "red") + 
-  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[which.min(colSums((h[3:4]-t(locs[,2:3]))^2))],],
-                      inherit.aes = FALSE, color = "red")
+  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[
+    which.min(colSums((h[1:2]-t(locs[,2:3]))^2))],], inherit.aes = FALSE, color = "red") + 
+  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[
+    which.min(colSums((h[3:4]-t(locs[,2:3]))^2))],], inherit.aes = FALSE, color = "red")
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
