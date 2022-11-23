@@ -12,7 +12,7 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, fig.width = 12, dpi = 300, dev = "ragg_png")
 locs <- readRDS("locs.rds")
 locs$FileNAME <- gsub("-", "", gsub(" ", "", iconv(locs$NAME, to = "ASCII//TRANSLIT")))
-baseurl <- "https://github.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/blob/main/maps/"
+baseurl <- "maps/"
 ```
 
 ```{r}
