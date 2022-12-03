@@ -25,9 +25,9 @@ Ferenci Tamás (<tamas.ferenci@medstat.hu>)
 - <a href="#továbbfejlesztési-ötletek-kutatási-lehetőségek"
   id="toc-továbbfejlesztési-ötletek-kutatási-lehetőségek">Továbbfejlesztési
   ötletek, kutatási lehetőségek</a>
-- <a href="#az-útvonaltervezés-technikai-részletei"
-  id="toc-az-útvonaltervezés-technikai-részletei">Az útvonaltervezés
-  technikai részletei</a>
+- <a href="#függelék-az-útvonaltervezés-technikai-részletei"
+  id="toc-függelék-az-útvonaltervezés-technikai-részletei">Függelék: Az
+  útvonaltervezés technikai részletei</a>
   - <a href="#magyarország-térképe"
     id="toc-magyarország-térképe">Magyarország térképe</a>
   - <a href="#magyarország-településeinek-adatai"
@@ -42,6 +42,9 @@ Ferenci Tamás (<tamas.ferenci@medstat.hu>)
   - <a href="#az-útvonaltervezés-végrehajtása"
     id="toc-az-útvonaltervezés-végrehajtása">Az útvonaltervezés
     végrehajtása</a>
+- <a href="#függelék-a-kórháztelepítés-megoldása-lineáris-programozással"
+  id="toc-függelék-a-kórháztelepítés-megoldása-lineáris-programozással">Függelék:
+  A kórháztelepítés megoldása lineáris programozással</a>
 
 ## Kérdésfelvetés
 
@@ -614,7 +617,8 @@ tudja követni). Úgyhogy ehhez érdemes egy durvább felbontású
 interpolációt készíteni, és az alapján behúzni az izokrón vonalakat:
 
 ``` r
-contourplotter <- function(datain, geodatain, lab, telepules = NA, hascontour = FALSE) {
+contourplotter <- function(datain, geodatain, lab, telepules = NA, hascontour = FALSE, title = "",
+                           filllims = NULL) {
   telepulescontour <- datain[, with(akima::interp(X, Y, value, nx = 1000, ny = 1000),
                                     cbind(CJ(Y = y, X = x), value = c(z))[!is.na(value)])]
   telepulescontour <- telepulescontour[sapply(st_intersects(st_as_sf(telepulescontour, coords = c("X", "Y"),
@@ -634,7 +638,8 @@ contourplotter <- function(datain, geodatain, lab, telepules = NA, hascontour = 
     {if(hascontour) metR::geom_contour2(data = telepulescontour2, aes(x = X, y = Y, z = value,
                                                                       label = after_stat(level)),
                                         inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")} +
-    labs(x = "", y = "", fill = lab, caption = captionlab) +
+    labs(x = "", y = "", fill = lab, caption = captionlab, title = title) +
+    {if(!is.null(filllims)) scale_fill_gradient(limits = filllims)} +
     metR::scale_x_longitude(ticks = 1, expand = waiver()) +
     metR::scale_y_latitude(ticks = 0.5, expand = waiver())
 }
@@ -1668,12 +1673,12 @@ meglehetősen egységes!
 ## Az ország középpontja, avagy hová telepítsünk kórházat?
 
 Az előbbi probléma, illetve a megoldása elvezet minket egy általánosabb
-kérdéshez. Hiszen mit jelent a legkisebb átlagos közelségű pont?
-Bizonyos értelemben ez az ország „közepe”, ahonnan minden legjobban
-elérhető, illetve, ezzel egyenértékűen, ami a legjobban elérhető
-mindenhonnan. (Az egyszerűség kedvéért most válasszuk ki a lélekszámmal
-súlyozott átlagot metrikaként; a továbbiakban végig ezt fogom használni,
-de minden elmondható lenne a többi mutatóval is.)
+kérdéshez. Hiszen mit jelent a legkisebb átlagos közelségű pont? Azt,
+ahonnan minden legjobban elérhető, illetve, ezzel egyenértékűen, azt,
+ami a legjobban elérhető mindenhonnan. Az egyszerűség kedvéért most
+válasszuk ki a lélekszámmal súlyozott átlagos elérési időt metrikaként;
+a továbbiakban végig ezt fogom használni, de minden elmondható lenne a
+többi mutatóval is.
 
 Miért izgalmas ez? Mondok egy hipotetikus kérdést: az országban egyetlen
 kórház sincs, most akarjuk az elsőt létesíteni. Hová telepítsük, hogy a
@@ -1681,16 +1686,17 @@ betegek átlagosan a leggyorsabban beérjenek a kórházba? Ez a kérdés
 persze nyilvánvaló marhaság (nem egyetlen kórház lesz az országban,
 azokat nem úgy telepítik, hogy egyszerűen egy ilyen átlagos elérési időt
 minimalizáljanak, léteznek orvosi szakterületek is a világon,
-progresszivitási szintek stb. stb.), de mégis, ennek a megértése az
-alaplépés a valóéletbeli problémák megoldásához. Ami igenis előjöhet egy
-kórház vagy mentőállomás telepítésekor (pláne, ha ez csak egy szempont a
-sok között, pláne, ha kisebb területi egységben gondolkozunk), de
-előjöhet számos más területen, hulladékgyűjtéstől kezdve akár felnyitó
-bányatérségek [optimális
+progresszivitási szintek, számíthatnak a történeti adottságok, nem
+ugyanolyan könnyű bárhová kórházat telepíteni, van meglevő
+infrastruktúra, a kórházaknak van kapacitás-korlátjuk stb. stb.), de
+mégis, ennek a megértése az alaplépés a valóéletbeli problémák
+megoldásához. Ami igenis előjöhet egy kórház telepítésekor, de előjöhet
+számos más területen, hulladékgyűjtéstől kezdve a felnyitó bányatérségek
+[optimális
 telepítéséig](https://www.antikvarium.hu/konyv/a-banyamuveles-alapjai-510070-0).
 
 Na de mi a válasz a kérdésre? Természetesen az előző pontban elért
-eredmény! Súlyozott átlagos elérési időt használva Budapest 9.
+eredmény: súlyozott átlagos elérési időt használva Budapest 9.
 kerületébe érdemes a kórházat telepíteni.
 
 Eddig tehát nincs nagy újdonság, de tegyük a kérdést érdekesebbé: két
@@ -1699,80 +1705,291 @@ az elsőt lerögzítjük a 9. kerületben, és a második helyét a maradék 317
 település között keressük, nézve, hogy melyik mellett minimális az
 eljutási idő (vigyázat, most már az egyes települések elérési ideje úgy
 értendő, hogy az adott településhez *közelebbi* kórházba mennyi az
-elérési idő!) sejthetőleg nem lesz túl szerencsés. Gondoljunk például
-egy képzeletbeli hosszú téglalap alakú országra, nagyjából hasonló
-lélekszámú településekkel. Ekkor az egy kórházas optimum a téglalap
-felében van, a két kórházas optimum viszont a harmadolópontokban – azaz
-itt nem kell kórház oda, ahol az egy kórházas optimum volt. Ilyenkor a
-fenti logikájú (szokták úgy is hívni: mohó) algoritmusok tévútra
-visznek.
+elérési idő!) sejthetőleg nem lesz túl szerencsés, legalábbis általában.
+Gondoljunk például egy képzeletbeli hosszú téglalap alakú országra,
+nagyjából hasonló lélekszámú településekkel. Ekkor az egy kórházas
+optimum a téglalap felében van, a két kórházas optimum viszont a
+harmadolópontokban – azaz itt nem kell kórház oda, ahol az egy kórházas
+optimum volt. Ilyenkor a fenti logikájú (szokták úgy is hívni: mohó)
+algoritmusok tévútra visznek.
+
+De akkor mi az általában is jól működő módszer?
 
 Két kórház esetén *talán* még megpróbálhatjuk az összes lehetséges
 kombinációt végigpróbálni, bár már ekkor is hatalmas lesz a
-műveletigény. Három vagy több kórház esetén ez praktikusan reménytelen.
+műveletigény: 3177 településünk van, ebből 5045076 párt lehet képezni.
+Három vagy több kórház esetén ez praktikusan reménytelen: a lehetséges
+kórháztelepítések száma exponenciálisan nő.
 
-Próbálkozhatunk e helyett valamilyen általános keresőalgoritmussal. (Az
-általános alatt azt értem, hogy semmilyen problémaspecifikus ismeretet
-nem használ az algoritmus, egyszerűen optimalizáljuk azt a célfüggvényt,
-hogy mennyi az elérési idő. Valamilyen deriváltakat nem használó,
-globális optimalizálási algoritmusra lesz szükségünk.) Ez már nem
-garantált optimumot ad, de reménykedhetünk benne, hogy ahhoz közeli
-értéket – észszerű futásidő alatt. Ha így támadjuk meg a problémát,
-akkor arra kell figyelni, hogy az opimum-keresés jó, ha tud a térbeli
-viszonyokról (tehát nem egyszerűen egy sztringként kapja meg a
-települések neveit), hogy kihasználhassa ezt az információt is. Egy
-lehetséges megvalósítás az, ahol a bemenet a két kórház koordinátája
-(összesen tehát 4 szám), és a célfüggvénybe beépítjük annak
-meghatározását, hogy az adott koordinátához mi a legközelebbi település.
-A DIRECT
-[eljárást](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#direct-and-direct-l)
-használva a következő eredményre jutunk:
+Élhetünk azzal az egyszerűsítéssel, hogy kórházat csak járási székhelyre
+telepítünk (Budapest esetén minden kerületet ilyennek tekintünk). Ez
+valószínűleg nem rossz közelítés, és nagyon fontos hangsúlyozni, hogy
+ezt most nem úgy értem, hogy a józan ész alapján, tehát az egyéb
+szempontok miatt, hanem pusztán matematikailag, csak az elérési idő
+minimalizálást tekintve is: a járási székhelyeknek mindig jobb az
+elérhetőségük, tehát valószínű, hogy a kórház egy járáson belül akkor is
+odakerülne, ha egyébként megengednénk bármely más járási településre is
+az elhelyezést. Így már csak 197 lehetőség van. Párból is csak 19306
+van, de az exponenciális növekedést nem kerültük el. Kitérőként
+megjegyzem, hogy ez egy nagyon jó példa arra, ahogy az emberek általában
+alábecslik az exponenciális növekedés súlyát: első ránézésre úgy tűnhet,
+hogy az, hogy kb. 3000 helyett csak 200 települést kell
+végigpróbálgatni, az egészen drámai egyszerűsítés (nagyságrendi). Igen
+ám, de ha csak *eggyel* több kórházt akarunk telepíteni, az máris
+200-szorosára növeli a végigpróbálandó kombinációk számát – tehát *két*
+nagyságrendet ront! Magyarán: a látszólag drasztikus egyszerűsítés
+annyit jelentett, hogy jó esetben *eggyel* több kórház optimális
+elhelyezésére van ilyen módszerrel reális esélyünk. Mondjuk nem 2, hanem
+3 helyét tudjuk meghatározni. De 4 kórházhoz már vagy szuperszámítógép,
+vagy nagyon sok türelem kell, 5 meg annál több kórház még ezekkel is
+nehéz lesz… (Az illusztráció kedvéért: egy viszonylag erős gépen, 8
+magra párhuzamosítva 1 kórház 1 percen belül megvan. 2 kórházhoz picit
+több mint 5 perc kell, 3 kórház viszont már több mint 8 *óra*, 4-et ezek
+után meg sem mertem próbálni.)
+
+Akkor tehát reménytelen a helyzet? Pláne, ha 10, 20 vagy mondjuk 50
+kórházat kell optimálisan telepítenünk? Vagy muszáj egzakt megoldás
+helyett valamilyen közelítéssel beérnünk?
+
+Nem. Szerencsére nem, meghatározhatjuk az optimális telepítést, mégpedig
+egzaktan, mindenféle közelítés nélkül, és akár 50 kórházra is – csak épp
+a fenti „brute force” algoritmusnál okosabban kell eljárnunk. (Jó példa
+arra, hogy megoldhatatlannak tűnő problémák is megoldhatóvá válhatnak,
+ha jobb eszközt választunk.) Jelen esetben nem is az a fontos, hogy mi
+magunk kitaláljuk a szuper-algoritmust, hiszen az ilyenek elmélete egy
+komplett tudományterület, valószínűleg nem sok jó sül ki abból, ha ezt a
+nulláról megpróbáljuk magunk kitalálni. A fontos e helyett az, hogy
+*átírjuk* a problémát egy olyan keretre, aminél ez a – kész – tudás
+bevethető, amire vannak nagy tudású, rendkívül optimalizált
+algoritmusok. Ha ugyanis a problémát el tudjuk ilyen keretben mondani,
+akkor nincs más dolgunk, mint ezeket bevetni a megoldásra.
+
+Jelen esetben a célravezető az, ha a problémát átfogalmazzunk
+matematikai optimalizálási (lineáris programozási, még pontosabban
+egészértékű programozási) problémává, majd bevetjük az arra a területre
+ismert – nagyon hatékony! – algoritmusok valamelyikét. Ennek a
+matematikai részleteit egy külön pontban mesélem el. Ami számunkra
+fontos, hogy ez a módszer *drámaian* gyorsabb, miközben továbbra is
+egzakt eredményt szolgáltat! Nézzük a futásidőket ezzel a módszerrel
+(idézzük fel a brute force megoldás számait!):
 
 ``` r
-wtavdist <- function(h) weighted.mean(pmin(durationsLongPop[Var1==locs$NAME[
-  which.min(colSums((h[1:2]-t(locs[, c("X", "Y")]))^2))]]$Duration,
-  durationsLongPop[Var1==locs$NAME[
-    which.min(colSums((h[3:4]-t(locs[, c("X", "Y")]))^2))]]$Duration),
-  HNTdata$Lakó.népesség)
+m <- nrow(durations)
+n <- sum(JarasInd)
 
-optloc <- nloptr::nloptr(
-  rep(c(19, 47), 2), wtavdist,
-  lb = rep(c(16, 45.5), 2),
-  ub = rep(c(23, 49), 2),
-  opts = list(algorithm = "NLOPT_GN_DIRECT"))
+LocationResult <- readRDS("LocationResult.rds")
 
-h <- optloc$solution
-locs$NAME[which.min(colSums((h[1:2]-t(locs[,2:3]))^2))]
+ggplot(data.frame(n = 1:length(LocationResult), time = sapply(LocationResult, function(x) x$time/60)),
+       aes(x = n, y = time)) + geom_point() + geom_line() +
+  labs(x = "Telepített kórházak száma", y = "Futási idő [min]")
 ```
 
-    ## [1] "Kajászó"
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+
+Látható, hogy a dolog teljesen vállalható, még nagyobb kórházszám esetén
+is! (Sőt, érdekes módon egy ponton túl ez még jót is tesz. Ennek az okát
+én sem tudom – sajnos az operációkutatáshoz nagyon kevéssé értek – talán
+a probléma struktúrája válik olyanná, ami segíti az algoritmust.)
+
+Ezen felbuzdulva akkor nézzük is meg az eredményeket! Piros ponttal
+jelölöm a kórházak helyét, a háttérben lévő szín – a szokásos simítással
+– mutatja az elérhetőséget adott kórház-telepítés mellett (itt ez tehát
+a *legközelebbi* kórház alapján megy!). A jobb oldalon lévő sáv mutatja,
+hogy az ország *egészének* milyen az elérhetősége adott
+kórház-konfiguráció mellett, mérve ezt az összes kórház (súlyozott)
+átlagos elérési idejével. Nagyon szépen látszik, ahogy az újabb és újabb
+kórházak telepítése színezi át az ország térképét:
 
 ``` r
-locs$NAME[which.min(colSums((h[3:4]-t(locs[,2:3]))^2))]
+kkorhazplot <- function(result, k) {
+  p <- contourplotter(merge(melt(
+    Reduce(function(...) merge(..., by = "NAME"), lapply(1:k, function(i)
+      setNames(durationsLong[Var1==HNTdata[JarasInd,][which(
+        result[[k]]$sol[(m*n+1):(m*n+n)]==1),]$Helység.megnevezése[i],
+        .(NAME = Var2, value = Duration)], c("NAME", paste0("value", i))))),
+    id.vars = "NAME")[, .(value = min(value)) , .(NAME)], locs), geodata,
+    "Súlyozott eljutási idő,\nlegközelebbi kórház [h]", title = paste0(k, " kórházas megoldás"),
+    filllims = c(0, 4))
+  for(i in 1:k) p <- p + stat_sf_coordinates(data = geodata[geodata$NAME==optlocs[[k]][i],],
+                                             inherit.aes = FALSE, color = "red")
+  p
+}
+
+korhazplots <- if(file.exists("korhazplots.rds")) readRDS("korhazplots.rds") else
+  lapply(1:length(LocationResult), function(k) kkorhazplot(LocationResult, k))
+
+korhazbars <- lapply(1:length(LocationResult), function(k)
+  ggplot(data.frame(y = sapply(LocationResult, function(x) x$obj/sum(HNTdata$Lakó.népesség))[k]),
+         aes(y = y, x = 1)) + geom_col() + scale_y_continuous(limits = c(0, 2)) +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),) +
+    labs(x = "", y = "Összesített átlagos eljutási idő [h]"))
+
+for(i in 1:length(LocationResult)) egg::ggarrange(korhazplots[[i]], korhazbars[[i]], ncol = 2,
+                                                  widths = c(7, 1))
 ```
 
-    ## [1] "Ebes"
+![](README_files/figure-gfm/unnamed-chunk-25-.gif)<!-- -->
 
-E szerint tehát a két kórházat Kajászóra és Ebesre kell telepíteni;
-ezzel az átlagos elérési idő 1.34 óra lesz. (Vessük ezt azzal egybe,
-hogy egy kórháznál 1.51 óra volt.)
-
-Ábrázolhatjuk ezt térképen is:
+Érdemes külön is ábrázolni az országos átlagos elérési idő javulását a
+kórházak számának függvényében:
 
 ``` r
-ggplot(geodata) + geom_sf(color = NA) +
-  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[
-    which.min(colSums((h[1:2]-t(locs[,2:3]))^2))],], inherit.aes = FALSE, color = "red") + 
-  stat_sf_coordinates(data = geodata[geodata$NAME==locs$NAME[
-    which.min(colSums((h[3:4]-t(locs[,2:3]))^2))],], inherit.aes = FALSE, color = "red")
+ggplot(data.frame(n = 1:length(LocationResult),
+                  weighted = sapply(LocationResult, function(x) x$obj/sum(HNTdata$Lakó.népesség))),
+       aes(x = n, y = weighted)) + geom_point() + geom_line() +
+  labs(x = "Telepített kórházak száma", y = "Súlyozott átlagos elérési idő [h]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
-Természetesen ennek az optimalitásában nem lehetünk biztosak.
+Kitérőként megjegyzem, hogy ez egy – nagyon primitív és végletekig
+leegyszerűsített, de mégis csak – példa arra, amit *szükséglet-alapú*
+tervezésnek szoktak nevezni: a kórházakat az alapján tervezzük (jelen
+esetben térben), hogy milyen szükséglet van rájuk (térben). A fenti
+számítás azért nagyon leegyszerűsített, mert egyéb információ híján a
+„szükséglet”-et egész egyszerűen a lélekszámmal méri (hiszen ez jelent
+meg a súlyozásban az átlagolásnál). Ez nem irreális, elvégre ahol többen
+laknak, ott valószínűleg a kórház igénybevétele is nagyobb, de azért
+jócskán finomítható lenne: egy diabetológiai osztálynál használhatnánk a
+cukorbeteg lakosok számát, egy szívinfarktusokat ellátó sürgősségi
+központnál csak a 60 év feletti lakosok számát, egy gyerekosztálynál
+csak a gyerekek számát stb. Én most azon egyszerű költői oknál fogva
+maradtam a lélekszámnál, mert egyedül erre volt megbízható, nyilvános,
+település-szintű információ. (Esetleg még a korcsoportos szűkítéssel
+lehet játszani, ha erre valaki érez késztetést, ilyen adatok ugyanis
+letölthetőek település-szinten is a KSH-tól.) Mindenesetre a módszertant
+ez is demonstrálja – ezt lehetne használni a komplexebb szükségletek
+alapján történő racionális tervezés esetén is.
 
-Fontos hangsúlyoznom, hogy ehhez a területhez én sem értek, simán lehet,
-hogy van operációkutatási eszköz ennek az ügyes megoldására…
+És a végére még egy gondolat. Valakiben felmerülhet az ötlet, hogy akkor
+miért nem határozzuk meg a szükséges kórházak optimális darabszámát
+magát is egy ilyen matematikai optimalizációs modellel? A dolog minden
+további nélkül megvalósítható (sőt, tulajdonképpen az optimalizációs
+feladat egyszerűsítését jelenti, ugyanis a fentiekben plusz korlátként
+kellett belerakni, hogy adott számú kórház legyen).
+
+Az előbbi grafikon már sejteti erre a választ: akkor azt kapnánk, hogy
+minden településre (járási székhelyre) kell egy kórházat telepíteni! De
+ha meggondoljuk, ez az eredmény tökéletesen logikus: ha *kizárólag* az a
+célfüggvény, hogy minél jobb legyen az átlagos elérési idő, akkor
+*tényleg* az a jó, ha mindenhová építünk egy kórházat! Ezen a ponton
+muszáj egy pillanatra megállnunk, és ezt a kérdést kicsit közelebbről
+megvizsgálnunk. A probléma ugyanis első ránézésre csak anyagi: persze,
+hogy ez az eredmény jött ki, hiszen modellünkben ingyen van a kórház
+települése – akkor még szép, hogy azt mondja, hogy mindenhová építsünk
+egyet. Valójában azonban bonyolultabb a helyzet: ha egy jótündér
+kifizetné az országnak tetszőleges számú kórház megépítését, *akkor sem*
+biztos, hogy az lenne a jó ötlet, ha mind a 3177 településre építenénk
+egy kórházat. Egy [másik
+írásomban](https://github.com/tamas-ferenci/GondolatokAMagyarKorhaziAdatokElemzeserolEsNehanyEgeszsegpolitikaiMegjegyzes)
+részletesen megtárgyaltam ezt a kérdést, ezt bátran merem ajánlani az
+érdeklődőeknek, röviden összefoglalva három baj van. Egyrészt a rengeteg
+kórház fenntartása nyilvánvalóan nem gazdaságos. Ez a legkisebb
+probléma, ezt figyelembe vehetnénk a költségben, vagy az egyszerűség
+kedvéért mondjuk most azt, hogy a jótündér ezt is fizeti. De még *ekkor
+sem* jó ötlet rengeteg kórházat telepíteni! A második gond, hogy az
+orvosok és ápolók szintén szét fognak töredezni, a méretgazdaságosság
+nem csak pénzben üt vissza: nem lesz elég ember ennyi kórházat
+működtetni. Sőt, valójában nem csak az emberekről van szó, hanem a
+berendezésekről, műszerekről: ha rengeteg kórház van, akkor nem fogjuk
+tudni mindegyikbe megvenni a legkorszerűbb eszközöket (vagy, ha mégis
+megtesszük, akkor meg ott fognak állni kihasználatlanul). De ha ezt is
+félrerakjuk, akkor jön a harmadik és legfontosabb probléma: az, hogy ez
+esetben nagyon kevés esetet fog ellátni egy kórház. De ez miért baj? –
+kérdezhetné valaki. Nem direkt jó? Hiszen akkor nincs kapkodás,
+nyugodtan lehet dolgozni az orvosoknak, nem kell sokat várnia a
+betegeknek…! Igen, ezek jogos szempontok, és lesznek esetek, amikor ezek
+dominálnak. Csak sajnos van egy ellentétes szempont is, és az esetek egy
+jelentős részében ez lesz a (sokkal) fontosabb: hogy a személyzet így
+nem tud gyakorlatot szerezni! Különböző beavatkozások egész során
+dokumentálták empirikus kutatásokkal, hogy a nagyobb kórházi ellátási
+volumen javítja a kimenetet. Illusztratív példaként egy részlet egy ma
+már [klasszikus kutatás](https://www.nejm.org/doi/10.1056/NEJMsa012337)
+eredményeiből:
+
+![Halálozás függése az évente ellátott
+esetszámtól](nejmsa012337_f2_A.png)
+
+Az ábrán az látszik, hogy négy különböző műtéttípus esetén (ez a négy
+csoportja az oszlopoknak) hogyan alakul a – 30 napon belüli vagy kórházi
+– halálozás a szerint, hogy az adott kórház mennyi műtét végez a
+kérdéses típusból (minél világosabb az oszlop, annál többet). Az
+eredmény nem igényel sok kommentárt: a növekvő gyakorlattal csökken,
+esetenként egészen drámai mértékben a halálozás. (Természetesen
+felvethető, hogy a különböző kórházak más összetételű, például más
+súlyosságú vagy életkorú betegeket láttak el, de az eredmények erre már
+korrigálva vannak.)
+
+Szó szerint több ezer hasonló vizsgálat
+[készült](https://pubmed.ncbi.nlm.nih.gov/?term=volume+outcome) az idők
+folyamán, különböző országokban, különböző időintervallumokban, a
+legkülönfélébb beavatkozásokra, lényében a fentivel egyező
+eredményekkel. Ez ma már praktikusan egy önálló kutatási terület
+(„volume-outcome”, azaz volumen-kimenet kapcsolat). Van ilyen eredmény
+[szívmegállástól](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2792816)
+kezdve
+[térdműtéten](https://link.springer.com/article/10.1007/s00167-021-06692-8)
+át a
+[szülészetig](https://bmcpregnancychildbirth.biomedcentral.com/articles/10.1186/s12884-021-03988-y).
+(Tulajdonképpen minden beavatkozásra, műtétre megvizsgálható ez a
+kérdés, olyannyira, hogy nemzetközileg több helyen már [az is
+megtörtént](https://www.sciencedirect.com/science/article/abs/pii/S016885101830424X),
+hogy a betegbiztonság érdekében minimális szükséges esetszámot
+[határoztak meg](https://www.karger.com/Article/Fulltext/456041)
+kórházra, vagy akár orvosra is, beavatkozás-típusonként.)
+
+Egy szó mint száz, egy sor betegség, szakterület esetén a túl sok kórház
+káros a betegeknek, mert rontja az ellátás minőségét, így még akkor is
+kerülendő, ha minden létező anyagi szempontot félreteszünk.
+
+Valójában az a gond, hogy túlságosan teátrális példa volt a részemről a
+kórház telepítése. Bár tényleg sokaknak ez jut az eszébe a gyors
+eljutásról, de az igazság az, hogy a kórházak egy halom dolgot
+csinálnak, amihez egyáltalán nem fontos gyorsan odajutni. Igen,
+természetesen léteznek sürgősségi területek, de ez csak egy aspektus.
+(Talán jobb is lett volna mentőállomást, vagy épp tűzoltóságot hozni
+példának. Ott egyébként gyakran a minimax-elv a fontosabb: azt kell
+garantálni, hogy még a legtávolabbi településre is eljusson adott
+időkorláton belül a mentő, nem csak azt, hogy átlagban gyorsan kiérjen.)
+Ezen kívül azonban egy sor terület esetén sokkal fontosabb egy kórház
+esetében az, hogy jól felszerelt, legkorszerűbb műszerekkel rendelkező,
+a szűkebb szakterületet is jól ismerő, gyakorlott orvosokkal és
+ápolókkal rendelkező centrum lássa el a betegeket, mint az, hogy könnyen
+be lehessen jutni. Persze, értem, hogy nem jár a busz, rossz az út stb.,
+de talán akkor az utat meg a buszmenetrendet kell megjavítani, és nem
+kórházat építeni minden második sarokra… Vegyük figyelembe, hogy a dolog
+alternatívája az, hogy könnyű bejutni, csak ott valószínűbb, hogy
+rosszabb ellátást kapunk (drámaibban: valószínűbb, hogy meghalunk). Mi a
+jó választás? A mai magyar helyzet igazából a szovjet mintájú szemaskó-i
+szervezés öröksége, kombinálódva azzal a helyzettel, hogy politikai
+okokból – kevés, a lakosság érdekeit a politikai kár vállalása árán is
+érvényesítő
+[kivételtől](https://www.libri.hu/talalati_lista/?text=mi%C3%A9rt+lettem+antipatikus)
+eltekintve – nem lehet kimondani, hogy ágyszámot csökkentünk, pláne
+kórházat zárunk be, miközben mindenki tudja, hogy erre lenne szükség. De
+ez már végképp az említett [másik
+írásom](https://github.com/tamas-ferenci/GondolatokAMagyarKorhaziAdatokElemzeserolEsNehanyEgeszsegpolitikaiMegjegyzes)
+témája.
+
+Ha már itt tartunk, valakiben felmerülhet az a gondolat is, hogy akkor
+miért nem építjük be mindezt a célfüggvénybe? Végső soron ez nem is
+lenne nehéz, kiszámítjuk, hogy hány beteg jut egy kórházra, majd
+korábban említett (volumen–eredmény) irodalmi adatok alapján ráeresztünk
+egy függvényt, ami bünteti azt, ha túl kevés a beteg, megjelenítve, hogy
+a gyakorlat hiánya miatt ott rosszabb lesz a teljesítmény.
+(Hangsúlyozom, hogy itt végig csak az orvosi szempontokat vizsgálom, az
+anyagi aspektus nélkül.) Ez, ha elvileg nem is lehetetlen, gyakorlatilag
+nagyon zűrősnek tűnik nekem. Hogyan konstruáljuk meg pontosan ezt a
+függvényt? Milyen az alakja? Mik a paraméterei? A probléma az, hogy
+valójában rengeteg választási lehetőség van, amiket kérdés, hogy
+mennyire lehet pontosan megmondani, de közben nagyon fog függeni tőlük
+az eredmény. Az is felmerülhet, hogy ha ezt beépítjük, akkor már ezer
+más szempont beépítése is ugyanennyire – vagy még sokkal inkább –
+indokolt lenne, akkor meg miért pont ezt ragadjuk meg? Összességében azt
+gondolom, hogy ha valaki nagyon bátor/elszánt, akkor gondolkozhat ilyen
+modellekben, de ezt a területet eléggé aknamezőnek érzem.
 
 ## A magyar TSP megoldása: hogy lehet leggyorsabban körbejárni az összes magyar települést?
 
@@ -1865,7 +2082,7 @@ ggplot(geodata) + geom_sf(color = NA) +
   metR::scale_y_latitude(ticks = 0.5, expand = waiver())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 A teljes itinert [innen](TSPsolItinary.csv) letölthetővé tettem – az
 érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
@@ -1910,12 +2127,14 @@ települését felkereshetjük autóval!
   támadás stb.) jelenté a legnagyobb érvágást?
 - Heurisztikus TSP-megoldók tesztelése és egybevetése az egzakt
   optimummal.
-- Átlagos eljutási idő vizsgálatok úgy, hogy csak a saját megyét nézzük.
-- Több telephelyes telepítési probléma vizsgálata jobb általános célú
-  optimalizálóval, vagy – ami még jobb – célra szabott operációkutatási
-  megoldással.
+- Átlagos eljutási idő vizsgálatok úgy, hogy csak a saját megyét (vagy
+  saját járást) nézzük.
+- Egyéb szükséglet-mutatók, például korcsoportos lélekszámok használata
+  a telepítési probléma megoldásában.
+- Egyéb célfüggvények vizsgálata az optimális telepítési probléma
+  megoldásában.
 
-## Az útvonaltervezés technikai részletei
+## Függelék: Az útvonaltervezés technikai részletei
 
 ### Magyarország térképe
 
@@ -1986,7 +2205,7 @@ térképfájlban). Például Balatoncsicsó így néz ki:
 plot(geodata[geodata$NAME=="Balatoncsicsó", "NAME"], main = "", key.pos = NULL)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 Megoldásként egyesítsük ezeket egyetlen objektumba:
 
@@ -2007,7 +2226,7 @@ hogy együtt kiadják Magyarország egész területét):
 plot(geodata["NAME"], main = "")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 A térkép koordinátarendszerét átállítjuk WGS84-re (hogy szokásos
 koordinátákat lássunk; az OSRM is ilyen formában fogja majd várni a
@@ -2284,3 +2503,7 @@ megoldásokat (útvonalak idejei és távolságai minden pár között).
 Vigyázat, ez mindenképp időre van optimalizálva, tehát a távolság úgy
 értendő, hogy a legrövidebb idejű utak távolsága, nem úgy, hogy a
 legkisebb távolság.
+
+## Függelék: A kórháztelepítés megoldása lineáris programozással
+
+Az
