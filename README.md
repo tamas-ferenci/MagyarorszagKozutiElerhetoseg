@@ -107,8 +107,8 @@ több fontos előnnyel is bír:
 
 A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a
 technikai részleteit [külön
-pontban](#az-%C3%BAtvonaltervez%C3%A9s-technikai-r%C3%A9szletei)
-tárgyalom meg.
+pontban](#függelék-az-útvonaltervezés-technikai-részletei) tárgyalom
+meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag *közúti*
 eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés
@@ -1724,28 +1724,27 @@ kórháztelepítések száma exponenciálisan nő.
 Élhetünk azzal az egyszerűsítéssel, hogy kórházat csak járási székhelyre
 telepítünk (Budapest esetén minden kerületet ilyennek tekintünk). Ez
 valószínűleg nem rossz közelítés, és nagyon fontos hangsúlyozni, hogy
-ezt most nem úgy értem, hogy a józan ész alapján, tehát az egyéb
-szempontok miatt, hanem pusztán matematikailag, csak az elérési idő
-minimalizálást tekintve is: a járási székhelyeknek mindig jobb az
-elérhetőségük, tehát valószínű, hogy a kórház egy járáson belül akkor is
-odakerülne, ha egyébként megengednénk bármely más járási településre is
-az elhelyezést. Így már csak 197 lehetőség van. Párból is csak 19306
-van, de az exponenciális növekedést nem kerültük el. Kitérőként
-megjegyzem, hogy ez egy nagyon jó példa arra, ahogy az emberek általában
-alábecslik az exponenciális növekedés súlyát: első ránézésre úgy tűnhet,
-hogy az, hogy kb. 3000 helyett csak 200 települést kell
-végigpróbálgatni, az egészen drámai egyszerűsítés (nagyságrendi). Igen
-ám, de ha csak *eggyel* több kórházt akarunk telepíteni, az máris
-200-szorosára növeli a végigpróbálandó kombinációk számát – tehát *két*
-nagyságrendet ront! Magyarán: a látszólag drasztikus egyszerűsítés
-annyit jelentett, hogy jó esetben *eggyel* több kórház optimális
-elhelyezésére van ilyen módszerrel reális esélyünk. Mondjuk nem 2, hanem
-3 helyét tudjuk meghatározni. De 4 kórházhoz már vagy szuperszámítógép,
-vagy nagyon sok türelem kell, 5 meg annál több kórház még ezekkel is
-nehéz lesz… (Az illusztráció kedvéért: egy viszonylag erős gépen, 8
-magra párhuzamosítva 1 kórház 1 percen belül megvan. 2 kórházhoz picit
-több mint 5 perc kell, 3 kórház viszont már több mint 8 *óra*, 4-et ezek
-után meg sem mertem próbálni.)
+ezt most nem úgy értem, hogy az egyéb szempontok miatt, hanem pusztán
+matematikailag, csak az elérési idő minimalizálást tekintve is: a járási
+székhelyeknek mindig jobb az elérhetőségük, tehát valószínű, hogy a
+kórház egy járáson belül akkor is odakerülne, ha egyébként megengednénk
+bármely más járási településre is az elhelyezést. Így már csak 197
+lehetőség van. Párból is csak 19306 van, de az exponenciális növekedést
+nem kerültük el. Kitérőként megjegyzem, hogy ez egy nagyon jó példa
+arra, ahogy az emberek általában alábecslik az exponenciális növekedés
+súlyát: első ránézésre úgy tűnhet, hogy az, hogy kb. 3000 helyett csak
+200 települést kell végigpróbálgatni, az egészen drámai egyszerűsítés
+(nagyságrendi). Igen ám, de ha csak *eggyel* több kórházt akarunk
+telepíteni, az máris 200-szorosára növeli a végigpróbálandó kombinációk
+számát – tehát *két* nagyságrendet ront! Magyarán: a látszólag
+drasztikus egyszerűsítés annyit jelentett, hogy jó esetben *eggyel* több
+kórház optimális elhelyezésére van ilyen módszerrel reális esélyünk.
+Mondjuk nem 2, hanem 3 helyét tudjuk meghatározni. De 4 kórházhoz már
+vagy szuperszámítógép, vagy nagyon sok türelem kell, 5 meg annál több
+kórház még ezekkel is nehéz lesz… (Az illusztráció kedvéért: egy
+viszonylag erős gépen, 8 magra párhuzamosítva 1 kórház 1 percen belül
+megvan. 2 kórházhoz picit több mint 5 perc kell, 3 kórház viszont már
+több mint 8 *óra*, 4-et ezek után meg sem mertem próbálni.)
 
 Akkor tehát reménytelen a helyzet? Pláne, ha 10, 20 vagy mondjuk 50
 kórházat kell optimálisan telepítenünk? Vagy muszáj egzakt megoldás
@@ -1768,10 +1767,11 @@ Jelen esetben a célravezető az, ha a problémát átfogalmazzunk
 matematikai optimalizálási (lineáris programozási, még pontosabban
 egészértékű programozási) problémává, majd bevetjük az arra a területre
 ismert – nagyon hatékony! – algoritmusok valamelyikét. Ennek a
-matematikai részleteit egy külön pontban mesélem el. Ami számunkra
-fontos, hogy ez a módszer *drámaian* gyorsabb, miközben továbbra is
-egzakt eredményt szolgáltat! Nézzük a futásidőket ezzel a módszerrel
-(idézzük fel a brute force megoldás számait!):
+matematikai részleteit egy [külön
+pontban](#függelék-a-kórháztelepítés-megoldása-lineáris-programozással)
+mesélem el. Ami számunkra fontos, hogy ez a módszer *drámaian* gyorsabb,
+miközben továbbra is egzakt eredményt szolgáltat! Nézzük a futásidőket
+ezzel a módszerrel (idézzük fel a brute force megoldás számait!):
 
 ``` r
 m <- nrow(durations)
@@ -1798,7 +1798,9 @@ a *legközelebbi* kórház alapján megy!). A jobb oldalon lévő sáv mutatja,
 hogy az ország *egészének* milyen az elérhetősége adott
 kórház-konfiguráció mellett, mérve ezt az összes kórház (súlyozott)
 átlagos elérési idejével. Nagyon szépen látszik, ahogy az újabb és újabb
-kórházak telepítése színezi át az ország térképét:
+kórházak telepítése színezi át az ország térképét (és az is látszik,
+hogy a mohó megoldás nem optimális, néha le is kell venni meglevő
+kórházat amikor több kórházas optimumot keresünk):
 
 ``` r
 kkorhazplot <- function(result, k) {
@@ -1878,7 +1880,7 @@ célfüggvény, hogy minél jobb legyen az átlagos elérési idő, akkor
 muszáj egy pillanatra megállnunk, és ezt a kérdést kicsit közelebbről
 megvizsgálnunk. A probléma ugyanis első ránézésre csak anyagi: persze,
 hogy ez az eredmény jött ki, hiszen modellünkben ingyen van a kórház
-települése – akkor még szép, hogy azt mondja, hogy mindenhová építsünk
+telepítése – akkor még szép, hogy azt mondja, hogy mindenhová építsünk
 egyet. Valójában azonban bonyolultabb a helyzet: ha egy jótündér
 kifizetné az országnak tetszőleges számú kórház megépítését, *akkor sem*
 biztos, hogy az lenne a jó ötlet, ha mind a 3177 településre építenénk
@@ -1953,12 +1955,12 @@ természetesen léteznek sürgősségi területek, de ez csak egy aspektus.
 példának. Ott egyébként gyakran a minimax-elv a fontosabb: azt kell
 garantálni, hogy még a legtávolabbi településre is eljusson adott
 időkorláton belül a mentő, nem csak azt, hogy átlagban gyorsan kiérjen.)
-Ezen kívül azonban egy sor terület esetén sokkal fontosabb egy kórház
-esetében az, hogy jól felszerelt, legkorszerűbb műszerekkel rendelkező,
-a szűkebb szakterületet is jól ismerő, gyakorlott orvosokkal és
-ápolókkal rendelkező centrum lássa el a betegeket, mint az, hogy könnyen
-be lehessen jutni. Persze, értem, hogy nem jár a busz, rossz az út stb.,
-de talán akkor az utat meg a buszmenetrendet kell megjavítani, és nem
+Ezen kívül azonban legtöbbször sokkal fontosabb egy kórház esetében az,
+hogy jól felszerelt, legkorszerűbb műszerekkel rendelkező, a szűkebb
+szakterületet is jól ismerő, gyakorlott orvosokkal és ápolókkal
+rendelkező centrum lássa el a betegeket, mint az, hogy könnyen be
+lehessen jutni. Persze, értem, hogy nem jár a busz, rossz az út stb., de
+talán akkor az utat meg a buszmenetrendet kell megjavítani, és nem
 kórházat építeni minden második sarokra… Vegyük figyelembe, hogy a dolog
 alternatívája az, hogy könnyű bejutni, csak ott valószínűbb, hogy
 rosszabb ellátást kapunk (drámaibban: valószínűbb, hogy meghalunk). Mi a
