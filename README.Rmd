@@ -422,6 +422,8 @@ Ezen felbuzdulva akkor nézzük is meg az eredményeket! Piros ponttal jelölöm
 
 ```{r, warning = FALSE, animation.hook = "gifski"}
 kkorhazplot <- function(result, k) {
+  optlocs <- sapply(LocationResult, function(x)
+    HNTdata[JarasInd,][x$sol[(m*n+1):(m*n+n)]==1, ]$Helység.megnevezése)
   p <- contourplotter(merge(melt(
     Reduce(function(...) merge(..., by = "NAME"), lapply(1:k, function(i)
       setNames(durationsLong[Var1==HNTdata[JarasInd,][which(
@@ -435,8 +437,10 @@ kkorhazplot <- function(result, k) {
   p
 }
 
-korhazplots <- if(file.exists("korhazplots.rds")) readRDS("korhazplots.rds") else
-  lapply(1:length(LocationResult), function(k) kkorhazplot(LocationResult, k))
+if(!file.exists("korhazplots.rds")) {
+  korhazplots <- lapply(1:length(LocationResult), function(k) kkorhazplot(LocationResult, k))
+  saveRDS(korhazplots, "korhazplots.rds")
+} else korhazplots <- readRDS("korhazplots.rds")
 
 korhazbars <- lapply(1:length(LocationResult), function(k)
   ggplot(data.frame(y = sapply(LocationResult, function(x) x$obj/sum(HNTdata$Lakó.népesség))[k]),
@@ -458,6 +462,8 @@ ggplot(data.frame(n = 1:length(LocationResult),
        aes(x = n, y = weighted)) + geom_point() + geom_line() +
   labs(x = "Telepített kórházak száma", y = "Súlyozott átlagos elérési idő [h]")
 ```
+
+Az eredményeket konkrétan is letölthetővé tettem (a pontos futásidőkkel, átlagos elérési időkkel, és a településlistákkal).
 
 Kitérőként megjegyzem, hogy ez egy -- nagyon primitív és végletekig leegyszerűsített, de mégis csak -- példa arra, amit _szükséglet-alapú_ tervezésnek szoktak nevezni: a kórházakat az alapján tervezzük (jelen esetben térben), hogy milyen szükséglet van rájuk (térben). A fenti számítás azért nagyon leegyszerűsített, mert egyéb információ híján a "szükséglet"-et egész egyszerűen a lélekszámmal méri (hiszen ez jelent meg a súlyozásban az átlagolásnál). Ez nem irreális, elvégre ahol többen laknak, ott valószínűleg a kórház igénybevétele is nagyobb, de azért jócskán finomítható lenne: egy diabetológiai osztálynál használhatnánk a cukorbeteg lakosok számát, egy szívinfarktusokat ellátó sürgősségi központnál csak a 60 év feletti lakosok számát, egy gyerekosztálynál csak a gyerekek számát stb. Én most azon egyszerű költői oknál fogva maradtam a lélekszámnál, mert egyedül erre volt megbízható, nyilvános, település-szintű információ. (Esetleg még a korcsoportos szűkítéssel lehet játszani, ha erre valaki érez késztetést, ilyen adatok ugyanis letölthetőek település-szinten is a KSH-tól.) Mindenesetre a módszertant ez is demonstrálja -- ezt lehetne használni a komplexebb szükségletek alapján történő racionális tervezés esetén is.
 
@@ -734,4 +740,377 @@ Ez a szkript egy `locs.csv` nevű fájlban várja a koordinátákat, majd az `os
 
 ## Függelék: A kórháztelepítés megoldása lineáris programozással
 
-Az
+### A telepítési program felírása lineáris programozási feladatként
+
+A kórházak optimális helyének megválasztása tulajdonképpen nem nagy újdonság az operációkutatásban: telepítési probléma néven tárgyalja [az irodalom](https://link.springer.com/book/10.1007/978-3-319-11008-0), egy klasszikus fejezet, amit lényegében közvetlenül alkalmazhatunk a mi mostani problémánk megoldására.
+
+Vezessünk be a következő jelöléseket. Jelölje $m$ a települések számát, $n$ pedig azon települések számát, ahová megengedjük kórház telepítését. Legáltalánosabb esetben bárhová telepíthetünk kórházat, ekkor $m=n$, azonban egyelőre azzal az egyszerűsítéssel fogunk élni, hogy csak járási székhelyre kerülhet kórház (ennek jogosságára egy külön pontban még visszatérek később, egyelőre fogadjuk el azon érvelés alapján, ami a főszövegben szerepelt). Budapest kerületeit is járási székhelynek minősítjük, ennek jogosságához a lélekszámuk tükrében nem fér kétség, így esetünkben $m=3177$ és $n=197$. Jelölje $c_{ij}$ a menetidőt, melynek során az $i$ indexű településről eljutunk a $j$ indexűre, és $y_{ij}$ azt, hogy az $i$ indexű település lakóinak a $j$ indexű településen lévő kórházba kell menniük. (Ekkor persze muszáj, hogy ott legyen is kórház -- erre mindjárt visszatérünk.) Látható tehát, hogy $y_{ij}$ egy bináris változó, azaz csak 0 és 1 értéket vehet fel: $y_{ij} \in\left\{0, 1\right\}$. Első ránézésre meglepő lehet, hogy sehol nem kötöttük ki, hogy mindenki a hozzá legközelebbi kórházba kell, hogy menjen, de nincs félreértés: _tényleg_ nem kötjük ezt ki! Erre ugyanis nincs szükség: semmi baj nem történik, ha a feltételek elvileg megengedik azt is, hogy egy települést egy távolabbi kórházhoz rendeljünk, hiszen amikor majd optimalizálunk, akkor e helyett úgyis találunk jobb megoldást. Lényegében tehát ennek a teljesülését rábízzuk az optimalizálásra. (A dolog mögött az van, hogy a kórházakat végtelen kapacitásúnak tételezzük fel, azaz nyugodtan hozzájuk rendelhetünk bármennyi települést, emiatt a fenti esetben mindig megtehetjük, hogy a települést a távolabbi kórházból átkötjük egy közelebbibe.) Mindent egybevetve a célfüggvényünk: $$\sum_{i, j} c_{ij} y_{ij}.$$ Az egyetlen probléma, hogy így nem végezzük el a települési lakosság-számmal való súlyozott átlagolást. Ez azonban könnyen megvalósítható, egyszerűen fogjuk fel úgy a dolgot, mintha a település minden lakója elutazna a hozzá rendelt kórházhoz, és az így megtett utakat adnánk össze. Igen, az átlaghoz elvileg még le kellene osztani a teljes lélekszámmal, de mivel az egy konstans, így nem befolyásol semmit. Ezért aztán a végleges célfüggvényünk: $$\sum_{i, j} d_i c_{ij} y_{ij},$$ ahol $d_i$ az $i$-edik település lélekszáma.
+
+Mik a korlátozó feltételeink? Először is, valahogy biztosítani kell, hogy adott település lakói pontosan egy kórházhoz tartozzanak. Mivel az $y_{ij}$ bináris, így a feltétel egyszerűen: $\sum_{j} y_{ij}=1$, minden $i = 1, 2, \ldots, m$-re. (Itt nem is az az érdekes, hogy egy település ne tartozhasson két kórházhoz, hiszen azt az optimalizáció sem választaná, hanem az, hogy ne tartozhasson nulla kórházhoz, mert az viszont javítaná a célfüggvényt, de ezt ki kell zárnunk.)
+
+A második a kórházak léte. Valahogy nyomon kell követnünk, hogy hol van kórház: jelölje $x_j$ azt, hogy a $j$ indexű településen van kórház. Ez természetesen szintén bináris, $x_{j} \in\left\{0, 1\right\}$. Azt kell kifejeznünk, hogy ha $y_{ij}=1$, azaz az $i$-edik településből a $j$-edikbe küldjük a betegeket, akkor ott, tehát $j$-ben, kell is, hogy legyen kórház. Mivel ez azt jelenti, hogy akkor $x_j=1$ kell legyen, így ez legegyszerűbben úgy tehető meg, ha azt kötjük ki, hogy $y_{ij}\leq x_j$ minden $i = 1, 2, \ldots, m$, $j = 1, 2, \ldots, n$-re. Egyedül arra kell figyelnünk, hogy ezzel az $n$ darab $x_j$ változónk is a döntési változók részévé válik, viszont a célfüggvényt nem befolyásolják, így majd 0 együtthatót kell hozzájuk rendelnünk.
+
+Az utolsó dolog, amire figyelnünk kell, hogy az országban telepített kórházak darabszáma az adott, előírt érték legyen, jelöljük ezt $k$-val. Ez a feltétel egyszerűen $\sum_j x_j = k$.
+
+És ezzel meg is vagyunk! A fentiekben egy lineáris programozási feladatot írtunk elő, pontosabban, mivel minden változónk csak egész értéket vehet fel, egy egészértékű programozási feladatot. (Sőt, binárisat.) Innentől kezdve használhatjuk a megoldására az ilyen feladatok megoldására kidolgozott jól bejáratott, messzemenőkig optimalizált algoritmusokat.
+
+### Az egészértékű programozási feladat átírása számítógépen kezelhető formára
+
+Az első feladat a fenti program átírása olyan formára, amit a megoldóalgoritmusok megesznek. Ez egyetlen okból nem teljesen direkt: a döntési változóink (egy része) mátrixban van elrendezve, miközben az optimalizáló programok csak vektort fogadnak. A megoldás tehát, hogy az $y_{ij}$ elemekből képezett mátrixot vektorizálnunk kell (vagy másképp szólva, az $y_{ij}$ elemeket vektorba kell összeraknunk). Ezt tehetjük soronként és oszloponként is, én most soronként tettem, tehát először vesszük az 1. település lehetséges kórházhelyeit, aztán a 2.-ét, ..., aztán az 3117.-ét. Az R-ben könnyű dolgunk van, mert a `c` vektort csinál egy mátrixból, egyetlen baj, hogy oszloponként, ezért a fentihez először transzponálnunk kell. Még azt ne felejtsük el, hogy a végére hozzá kell fűznünk $n$ darab nullát (amik majd az $x$-ekhez fognak tartozni). A célfüggvény-együtthatóink tehát:
+
+```{r, eval = FALSE}
+c(c(t(durs)), rep(0, n))
+```
+
+Itt a `durs` tartalmazza az eljutási időket ($c_{ij}$). Mondhatja valaki, hogy kellene még a lélekszámmal súlyozás, de ez igazából nem jelent érdemi változást, csak a `durs` jelentése lesz más: az eljutási idők helyett az eljutási idők, szorozva a lélekszámmal ($d_i c_{ij}$).
+
+Mi a helyzet a feltételekkel? Ezeket egy mátrixba kell rendezni; előrebocsátom, hogy mindenhol ritka mátrix formátumot fogok használni a megadáshoz (mégpedig a `Matrix` csomag használatával), ugyanis bizonyos későbbi megoldó algoritmusok explicite támogatják ezt (és szükség is lesz rá, hiszen hatalmasak a mátrixok, viszont tényleg ritkák), ha meg nem, veszteni akkor sem vesztettünk semmit. A mátrix a fent felsorolt három dolgot kell, hogy tartalmazza: minden település pontosan egy kórházhoz tartozik, ahová egy települést bekötünk ott legyen kórház, a kórházak száma $k$ legyen. Nézzük ezeket most egyesével! 
+
+Az első feltétel a $\sum_{j} y_{ij}=1$, minden $i = 1, 2, \ldots, m$-re. Mivel soronként raktuk át vektorba a változókat, így ez azt jelenti, hogy először az első $n$ számot adjuk össze, aztán a második $n$ számot, és így tovább, összesen $m$-szer. Az ennek megfelelő mátrix az lesz, aminek az első sorában az az első $n$ szám 1-es és a többi nulla, a második sorában a második $n$ szám 1-es és a többi nulla, és így tovább, összesen $m$ sorig. Egyedül arra kell figyelni, hogy mindezt meg kell toldani jobbról $n$ darab csupa nulla oszloppal (amik az $x$-ekre fognak rászorozni). Amit tehát kaptunk:
+
+```{r, eval = FALSE}
+Matrix::sparseMatrix(i = rep(1:m, each = n), j = 1:(m*n), x = 1, dims = c(m, m*n + n))
+```
+
+A jobb oldal pedig egyszerűen $=1$, ismételve $m$-szer.
+
+A második feltétel az $y_{ij}\leq x_j$ minden $i = 1, 2, \ldots, m$, $j = 1, 2, \ldots, n$-re. Itt először kivonjuk $x_j$-t, így a feltétel mátrixa úgy fog kinézni, hogy először egy hatalmas, $m \cdot n$-es egységmátrix van bal oldalról, ezek adják az $y_{ij}$-ket, majd jobbra melléfűzve egy olyen mátrix, aminek az első oszlopában van $m$ darab $-1$-es (hiszen az $y_{1j}$ mindegyikéből $x_1$-et kell kivonni), a második oszlopban alatta $m$ darab $-1$, és így tovább $n$ oszlopon keresztül. Azaz:
+
+```{r, eval = FALSE}
+cbind(Matrix::Diagonal(m*n, 1), Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1))
+```
+
+A jobb oldal $\leq 0$, ismételve $m \cdot n$-szer.
+
+Végezetül a harmadik feltétel, hogy $\sum_j x_j = k$, ez könnyen kezelhető: a mátrix egyetlen sor, aminek az utolsó $n$ elemében van 1-es (a többi nulla). Azaz:
+
+```{r, eval = FALSE}
+Matrix::sparseMatrix(i = rep(1, n), j = ((m*n)+1):(m*n + n), x = 1)
+```
+
+A jobb oldal $=k$.
+
+Ezzel gépi úton feldolgozható formára hoztuk a problémát; kérdés, hogy hogyan oldjuk meg.
+
+### Az egészértékű programozási feladat számítógépes megoldási lehetőségei
+
+Mivel az operációkutatáshoz nem igazán értek, így pusztán egy hevenyészett internetes keresés alapján négy lehetőséget találtam az egészértékű optimalizálás tényleges, számítógépes megoldására. (A kritériumom annyi volt, hogy ingyenes és nyílt forráskódú legyen a program, illetve, hogy R alatt használható legyen.)
+
+Az első feladat annak meghatározása, hogy melyik programcsomagot alkalmazzuk élesben. A kérdés nem nyilvánvaló, mert félő, hogy a probléma nagy mérete miatt lesznek olyan algoritmusok, amik elfogadhatatlanul lassan és/vagy nagy memóriaigénnyel futnak csak le. Éppen ezért az első feladat ennek a kipróbálása. (Tudom, hogy vannak mindenféle benchmark-ok, de mivel ehhez nem igazán értek, úgy döntöttem, hogy empirikusan, a konkrét problémán mérem le a teljesítményeket.) Azért, hogy feleslegesen ne bonyolítsuk az életünket, az $n=m$ esetet vizsgáltam: mivel a kérdés az lesz, hogy az algoritmusok hogyan viselkednek egyre nagyobb problémákon, így egyszerűbb, ha ezt, mármint a probléma nagyságát, csak egyetlen változó méri, és azt kell majd növelnünk.
+
+Nézzük a lehetőségeket!
+
+#### GLPK
+
+A [GLPK](https://www.gnu.org/software/glpk/) használatát R alatt az [Rgplk](https://cran.r-project.org/web/packages/Rglpk/index.html) és a [glpkAPI](https://cran.r-project.org/web/packages/glpkAPI/glpkAPI.pdf) csomag is támogatja; mivel az utóbbi kicsit nyakatekertnek tűnik, az előbbit használtam.
+
+Íme a kód:
+
+```{r}
+solGLPK <- function(durs, k) {
+  n <- nrow(durs)
+  
+  result <- Rglpk::Rglpk_solve_LP(
+    obj = c(c(t(durs)), rep(0, n)),
+    mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
+                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
+    dir = c(rep("==", n), rep("<=", n*n), "=="),
+    rhs = c(rep(1, n), rep(0, n*n), k),
+    bounds = list(lower = list(ind = 1:(n*n + n), val = rep(0, n*n + n)),
+                  upper = list(ind = 1:(n*n + n), rep(1, n*n + n))),
+    types = rep("B", n*n + n),
+    max = FALSE)
+  
+  list(obj = result$optimum, sol = result$solution)
+}
+```
+
+Látszik, hogy mindez lényegében a fenti gondolatok direkt implementálása (egyedül a változók határainak megadása lehet meglepő, mert azt is ritka mátrix stílusban kell közölni).
+
+#### lp_solve
+
+Az [lp_solve](https://lpsolve.sourceforge.net/) használatát R alatt az [lpSolveApi](https://cran.r-project.org/web/packages/lpSolveAPI/index.html) és az [lpSolve](https://cran.r-project.org/web/packages/lpSolve/index.html) csomag teszi lehetővé, ahogy néztem, ez utóbbi nem támogatja a $\leq 1$ típusú felső korlátokat, így maradt az előbbi.
+
+A kód:
+
+```{r}
+solLPSOLVE <- function(durs, k) {
+  n <- nrow(durs)
+  
+  mat1Sparse <- Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n))
+  mat2Sparse <- cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1))
+  mat3Sparse <- Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)
+  
+  Amat <- rbind(mat1Sparse, mat2Sparse, mat3Sparse)
+  
+  lpmodel <- lpSolveAPI::make.lp(n*n + n + 1, n*n + n)
+  for(i in 1:ncol(Amat)) lpSolveAPI::set.column(lpmodel, i, Amat[, i])
+  lpSolveAPI::set.objfn(lpmodel, c(c(t(durs)), rep(0, n)))
+  lpSolveAPI::set.bounds(lpmodel, rep(0, n*n + n), rep(1, n*n + n))
+  lpSolveAPI::set.constr.type(lpmodel, c(rep("=", n), rep("<=", n*n), "="))
+  lpSolveAPI::set.constr.value(lpmodel, c(rep(1, n), rep(0, n*n), k))
+  lpSolveAPI::set.type(lpmodel, 1:(n*n + n), "binary")
+  lpSolveAPI::solve.lpExtPtr(lpmodel)
+  
+  list(obj = lpSolveAPI::get.objective(lpmodel),
+       sol = lpSolveAPI::get.variables(lpmodel))
+  
+}
+```
+
+Itt már bonyolultabb kicsit a helyzet, ráadásul -- számomra elég érthetetlen módon -- nincs olyan utasítás, amivel a megkötések mátrixát egyben át lehetne adni, így kénytelenek vagyunk oszloponként betölteni azt.
+
+#### Cbc
+
+A [Cbc](https://github.com/coin-or/Cbc) használatát az R alatt az [rcbc](https://github.com/dirkschumacher/rcbc) csomag támogatja.
+
+A kód:
+
+```{r}
+solCBC <- function(durs, k) {
+  n <- nrow(durs)
+  
+  result <- rcbc::cbc_solve(
+    obj = c(c(t(durs)), rep(0, n)),
+    mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
+                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
+    row_lb = c(rep(1, n), rep(-Inf, n*n), k),
+    row_ub = c(rep(1, n), rep(0, n*n), k),
+    col_ub = rep(1, n*n + n),
+    col_lb = rep(0, n*n + n),
+    is_integer = rep(TRUE, n*n + n),
+    max = FALSE,
+    cbc_args = list(log = 0)
+  )
+  
+  list(obj = result$objective_value, sol = result$column_solution)
+}
+```
+
+Ez ismét meglehetősen közvetlen átültetés, egyedül arra kell figyelni, hogy a jobb oldalaknál nem lehet relációt megadni, csak alsó és felső értéket, így az egyenlőséget két azonos számmal, a kisebb-egyenlőt pedig az alsó határt $-\infty$-re állítva adjuk meg.
+
+#### HiGHS
+
+A [HiGHS](https://highs.dev/) az R alatt a [highs](https://cran.r-project.org/web/packages/highs/index.html) csomag segítségével hívható meg.
+
+A kód:
+
+```{r}
+solHIGHS <- function(durs, k) {
+  n <- nrow(durs)
+  
+  result <- highs::highs_solve(
+    L = c(c(t(durs)), rep(0, n)),
+    lower = rep(0, n*n + n),
+    upper = rep(1, n*n + n),
+    A = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
+              cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+              Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
+    lhs = c(rep(1, n), rep(-Inf, n*n), k),
+    rhs = c(rep(1, n), rep(0, n*n), k),
+    types = rep("I", n*n + n), maximum = FALSE
+  )
+  
+  list(obj = result$objective_value, sol = result$primal_solution)
+}
+```
+
+Ez mindenben az előbbihez hasonló implementáció.
+
+### A megoldási lehetőségek vizsgálata
+
+A vizsgálat két szempontra kell hogy kiterjedjen: futásidő és memóriaigény. Érdemes először nagyon kis problémákkal kezdeni, és ránézni az eredményre, és csak ezután menni a nagyobb problémák felé, hátha valamelyik algoritmus már ekkor láthatóan nagy rossz (és ezért a végtelenségig várhatnánk, ha rögtön nagyobb problémákat is próbálnánk). A probléma méretét úgy állítottam be, hogy a teljes magyar mátrixból a meghatározott számú települést véletlenszerűen kiválasztottam, és így futtattam az optimalizálást.
+
+A megvalósításhoz a [bench](https://bench.r-lib.org/) csomagot használtam, ami három, a mostani szempontból fontos előnyt is kínál:
+
+- Egyszerre mér idő- és memóriaigényt.
+- Könnyen automatizálható: van függvénye, ami megadott paraméterek összes lehetséges kombinációjára automatikusan lefuttatja a méréseket, és összefogja az eredményeket.
+- Több függvény összehaslítása során automatikusan ellenőrzi, hogy mindegyik ugyanazt az eredményt adja-e vissza, és hibát ad ha nem; így egyúttal tartalmilag is tudjuk ellenőrizni, hogy nem rontottuk-e el az implementációkat (vagy legalábbis az összeset azonosan rontottuk el...). 
+
+A `bench` használata során nem kell megadni a szükséges futtatások számát, adaptív módon határozza meg az időigény alapján.
+
+Amint mondtam, a településeket véletlenszerűen választottam ki az összes település közül. Igen ám, de egy teljesítménymérés, bár többször futtatja az optimalizálót, de mindig _ugyanazokkal_ a településekkel. Mivel azonban az eredmény függhet a települések megválasztásától is, ezért érdemes az egészet még egy külső ciklusba rakni, és többször újrafuttatni, de immár különböző településekkel is, hogy ennek a hatását is lássuk; a lenti kódokban ezt szolgálja a `rep` változó.
+
+#### Első kör
+
+Elsőként mind a négy optimalizáló -- egészértékű programozást megoldó -- eljárást használjuk, de csak szolid, legfeljebb 90 települést tartalmazó esetekben. Nézzük először az időigényt:
+
+```{r}
+if(!file.exists("benchres1.rds")) {
+  benchres1 <- bench::press(
+    n = c(seq(10, 90, 20)),
+    k = c(1, 5, 10),
+    rep = 1:3,
+    {
+      locs <- sample(1:nrow(durations), n, replace = FALSE)
+      durs <- durations[locs, locs]
+      
+      bench::mark(GLPK = solGLPK(durs, k),
+                  LPSOLVE = solLPSOLVE(durs, k),
+                  CBC = solCBC(durs, k),
+                  HIGHS = solHIGHS(durs, k))
+    }
+  )
+  saveRDS(benchres1, "benchres1.rds")
+} else benchres1 <- readRDS("benchres1.rds")
+
+benchres1DF <- with(benchres1, data.frame(n, k, rep, median = as.numeric(median),
+                                          memory = as.numeric(mem_alloc)/1024/1024/1024,
+                                          solver = bench:::as.character.bench_expr(expression)))
+
+ggplot(benchres1DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
+```
+
+Látszik, hogy az `lp_solve` eljárás érezhető lassabb mint a másik három.
+
+Vizsgáljuk meg a memóriaigényt is:
+
+```{r}
+ggplot(benchres1DF, aes(x = n, y = memory, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Memóriaigény [GB]", color = "Megoldó")
+```
+
+Az `lp_solve` memóriaigénye valami egészen elmebeteg módon elszáll, tehát biztosan nem érdemes vele számolni a továbbiakban.
+
+#### Második kör
+
+Nézzük tehát a maradék három eljárást, immár egy picit nagyobb problémákra is, elmenve 200 településig. Szokásosan kezdjük a futás időigényével:
+
+```{r}
+if(!file.exists("benchres2.rds")) {
+  benchres2 <- bench::press(
+    n = c(seq(30, 120, 30), 150, 200),
+    k = c(1, 5, 10, 30),
+    rep = 1:3,
+    {
+      locs <- sample(1:nrow(durations), n, replace = FALSE)
+      durs <- durations[locs, locs]
+      
+      bench::mark(GLPK = solGLPK(durs, k),
+                  CBC = solCBC(durs, k),
+                  HIGHS = solHIGHS(durs, k))
+    }
+  )
+  saveRDS(benchres2, "benchres2.rds")
+} else benchres2 <- readRDS("benchres2.rds")
+
+benchres2DF <- with(benchres2, data.frame(n, k, rep, median = as.numeric(median),
+                                        memory = as.numeric(mem_alloc)/1024/1024,
+                                        solver = bench:::as.character.bench_expr(expression)))
+
+ggplot(benchres2DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
+```
+
+Látszik, hogy a GLPK időigénye némileg nagyobb a többinél. Az is érzékelhető, hogy érdekes módon a nagy számú kórház optimalizálása gyorsabban fut.
+
+Nézzük most a memóriaigényt:
+
+```{r}
+ggplot(benchres2DF, aes(x = n, y = memory, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Memóriaigény [MB]", color = "Megoldó")
+```
+
+Itt viszont a GLPK már nagyon egyértelműen kilóg, így ha az előbbi után volt is kétségünk, ez bizonyossá teszi, hogy tovább már csak a maradék két optimalizálóval érdemes menni. Jól látszik egyébként, hogy a különböző futtatások között memóriaigényben nem volt különbség (a három görbe egybeesik), de ez logikus is, ha meggondoljuk, hiszen a memóriaigény szempontjából mindegy, hogy konkrétan mely településeket választjuk ki.
+
+#### Harmadik kör
+
+A harmadik és egyben utolsó körbe, a "döntőbe" tehát a Cbc és a HiGHS jutott be. Itt már végképp bátrak vagyunk, és a pontos feltérképezés érdekében egészen az 500-as településszámig elmegyünk. Nézzük a futásidőt:
+
+```{r}
+if(!file.exists("benchres3.rds")) {
+  benchres3 <- bench::press(
+    n = seq(100, 500, 100),
+    k = c(1, 10, 30, 50),
+    rep = 1:3,
+    {
+      locs <- sample(1:nrow(durations), n, replace = FALSE)
+      durs <- durations[locs, locs]
+      
+      bench::mark(CBC = solCBC(durs, k),
+                  HIGHS = solHIGHS(durs, k))
+    }
+  )
+  saveRDS(benchres3, "benchres3.rds")
+} else benchres3 <- readRDS("benchres3.rds")
+
+benchres3DF <- with(benchres3, data.frame(n, k, rep, median = as.numeric(median),
+                                          memory = as.numeric(mem_alloc)/1024/1024,
+                                          solver = bench:::as.character.bench_expr(expression)))
+
+ggplot(benchres3DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
+```
+
+A most már nagyon eltérő időigények miatt érdemes az ábrát úgy is megnézni, hogy az egyes panelek függőleges tengelyének beosztása eltérhet:
+
+```{r}
+ggplot(benchres3DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k, scales = "free") + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
+```
+
+A helyzet most már nem egyértelmű, de egy leheletnyit a HiGHS tűnik jobbnak.
+
+Nézzük meg a memóriaigényt is:
+
+```{r}
+ggplot(benchres3DF, aes(x = n, y = memory, color = solver, group = interaction(solver, rep))) +
+  facet_wrap(~k) + geom_line(alpha = 0.5) +
+  labs(x = "Városok száma", y = "Memóriaigény [MB]", color = "Megoldó")
+```
+
+Ebben gyakorlatilag semmilyen értékelhető különbség nem mutatkozik.
+
+#### Konklúzió
+
+A fenti vizsgálatok egyik konklúziója nagyon egyértelmű: sem a GLPK, sem az lp_solve nem alkalmas nagyobb méretű problémák megoldására. Az, hogy a Cbc és a HiGHS közül melyik a jobb, már közel nem ilyen egyértelmű, egy nagyon kicsit talán a HiGHS tűnik jobbnak, így a továbbiakban azt fogom használni, de ismétlem, hogy nagy különbség minden bizonnyal nincsen.
+
+### A kórháztelepítési probléma megoldása HiGHS-zal
+
+Tulajdonképpen már csak egy módosítást kell tennünk: meg kell engedni az általános esetet, amikor az $n$ értéke nem feltétlenül egyezik $m$-mel. Ennek a lekódolása a fentiek után már nem nehéz. Sőt, akkor rögtön oldassuk meg különböző számú kórházra, 1-től 50-ig:
+
+```{r}
+m <- nrow(durations)
+n <- sum(JarasInd)
+
+if(!file.exists("LocationResult.rds")) {
+  LocationResult <- lapply(1:50, function(k) {
+    tim <- bench::system_time(res <- highs::highs_solve(
+      L = c(c(t(durations[, JarasInd] * outer(HNTdata$Lakó.népesség, rep(1, n)))), rep(0, n)),
+      lower = rep(0, m*n + n),
+      upper = rep(1, m*n + n),
+      A = rbind(Matrix::sparseMatrix(i = rep(1:m, each = n), j = 1:(m*n), x = 1, dims = c(m, m*n + n)),
+                cbind(Matrix::Diagonal(m*n, 1), Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1)),
+                Matrix::sparseMatrix(i = rep(1, n), j = ((m*n)+1):(m*n + n), x = 1)),
+      lhs = c(rep(1, m), rep(-Inf, m*n), k),
+      rhs = c(rep(1, m), rep(0, m*n), k),
+      types = rep("I", m*n + n),
+      maximum = FALSE
+    ))
+    list(time = tim[["real"]], obj = res$objective_value, sol = round(res$primal_solution))
+  })
+  saveRDS(result, "LocationResult.rds")
+}
+```
+
+Amint látható, elmentettem a futtatáshoz szükséges időt is (ez alapján készült a főszövegben a megfelelő ábra).
+
+Mentsük ki a konkrét eredményeket is:
+
+```{r}
+LocRes <- data.table(k = 1:length(LocationResult),
+                     obj = sapply(LocationResult, function(x) x$obj/sum(HNTdata$Lakó.népesség)),
+                     time = sapply(LocationResult, function(x) x$time))
+LocRes <- cbind(LocRes, rbindlist(lapply(LocationResult, function(x)
+  data.table(t(HNTdata[JarasInd,][x$sol[(m*n+1):(m*n+n)]==1, ]$Helység.megnevezése))), fill = TRUE))
+fwrite(LocRes, "LocRes.csv", dec = ",", sep = ";", bom = TRUE)
+```
