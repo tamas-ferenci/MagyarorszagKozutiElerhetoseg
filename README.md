@@ -1869,12 +1869,12 @@ ggplot(data.frame(n = 1:length(LocationResult),
 
 ![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
-Az eredményeket konkrétan is
+Az eredményeket a fenti vizualizációkon túl konkrétan is
 [letölthetővé](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/LocRes.csv)
-tettem (a pontos futásidőkkel, átlagos elérési időkkel, és a
+tettem (a pontos futásidőkkel, elérési időkkel, és a
 településlistákkal).
 
-Kitérőként megjegyzem, hogy ez egy – nagyon primitív és végletekig
+Megjegyzem, hogy ez egy – nagyon primitív és végletekig
 leegyszerűsített, de mégis csak – példa arra, amit *szükséglet-alapú*
 tervezésnek szoktak nevezni: a kórházakat az alapján tervezzük (jelen
 esetben térben), hogy milyen szükséglet van rájuk (térben). A fenti
@@ -1883,15 +1883,89 @@ számítás azért nagyon leegyszerűsített, mert egyéb információ híján a
 meg a súlyozásban az átlagolásnál). Ez nem irreális, elvégre ahol többen
 laknak, ott valószínűleg a kórház igénybevétele is nagyobb, de azért
 jócskán finomítható lenne: egy diabetológiai osztálynál használhatnánk a
-cukorbeteg lakosok számát, egy szívinfarktusokat ellátó sürgősségi
-központnál csak a 60 év feletti lakosok számát, egy gyerekosztálynál
-csak a gyerekek számát stb. Én most azon egyszerű költői oknál fogva
-maradtam a lélekszámnál, mert egyedül erre volt megbízható, nyilvános,
-település-szintű információ. (Esetleg még a korcsoportos szűkítéssel
-lehet játszani, ha erre valaki érez késztetést, ilyen adatok ugyanis
-letölthetőek település-szinten is a KSH-tól.) Mindenesetre a módszertant
-ez is demonstrálja – ezt lehetne használni a komplexebb szükségletek
-alapján történő racionális tervezés esetén is.
+cukorbeteg lakosok számát, egy kardiológiai osztálynál a szívbetegek
+számát, egy gyerekosztálynál csak a gyerekek számát stb. Én most azon
+egyszerű költői oknál fogva maradtam a lélekszámnál, mert egyedül erre
+volt megbízható, nyilvános, település-szintű információ. (Esetleg a
+korcsoportos szűkítéssel lehet játszani, ha erre valaki érez késztetést,
+ilyen adatok ugyanis letölthetőek település-szinten is a KSH-tól.)
+Mindenesetre a módszertant ez is demonstrálja – ezt lehetne használni a
+komplexebb, szükségletek alapján történő racionális tervezés esetén is.
+
+(Itt muszáj közbeszúrnom egy megjegyzést. A fentiekben magától értetődő
+kérdésnek vettem, hogy tudjuk hány cukorbeteg van adott településen, de
+sajnos ez közel nem ilyen egyszerű. Az ilyen jellegű információk egyik
+alapvető forrását az ún. betegségregiszterek jelentik: ezek a teljesség
+igényével gyűjtik egy országban előforduló eseteit adott betegségnek.
+Magyarországon a két legismertebb ilyen regiszter a [Nemzeti
+Szívinfarktusregiszter](https://nszr.gokvi.hu/ir/fooldal) és a [Nemzeti
+Rákregiszter](https://onkol.hu/nemzeti-rakregiszter/). Ezek előnye a
+teljeskörűségen túl az, hogy részletgazdag klinikai információk érhetőek
+el a betegekről, hiszen az orvos mindegyik esethez kitölt egy kérdőívet,
+valamint, hogy – pont ebből fakadóan, hiszen orvos tölti ki, az általa
+épp akkor ellátott betegről – jó az adatminőség is. (Bár közel nem
+tökéletes, még a nagy hagyományú Rákregiszterben is [érdemleges
+zűrök](https://akjournals.com/view/journals/650/163/37/article-p1481.xml)
+vannak.) A dolog ára, hogy mindez rettenetesen munkaigényes: nagyon
+terheli az orvosokat az említett adatszolgáltatás, amit egyesével,
+kézzel kell végrehajtani minden betegre, így ilyen regisztert működtetni
+csak a legfontosabb néhány betegségre lehet. Éppen ezért vált egyre
+népszerűbbé az utóbbi időben az ún. adminisztratív/finanszírozási adatok
+használata. Ehhez tudni kell, hogy minden betegellátási epizódot
+elektronikus úton jelenteni kell a finanszírozó NEAK-nak, márpedig ebben
+a jelentésben – a beteg adatain túl – szerepel a diagnózis, vagy az
+elvégzett beavatkozás kódja is. Akkor, kérdezhetné valaki, miért nem
+gyűjtjük ki ezekből – például – a cukorbetegség kódjait, és meg is
+vagyunk. A dolog azért nagyon csábító, mert az adatbázis *eleve*
+rendelkezésre áll, így nulla plusz munkával, minden külön beruházás,
+vagy adatszolgáltatási plusz-terhelés nélkül tudunk válaszolni,
+lényegében ügyesen felhasználva a más cél miatt amúgy is begyűjtött
+adatokat. És valóban, a cukorbetegség kódjainak legyűjtése pár perc,
+sőt, tulajdonképpen az sem túl nehéz, hogy ezt akár az összes betegségre
+megtegyük. Mindez nagyon jól hangzik, csak két probléma van. Az egyik,
+hogy az adatminőség rossz. Egyfelől jóhiszemű okok miatt, a kódokat
+nagyon könnyű elgépelni, másrészt rosszhiszemű okok miatt, ugyanis a
+jelentéseket a kórházak orrba-szájba hamisítják (bocsánat:
+optimalizálják) épp azért, mert a finanszírozásuk múlik ezen. Ez ellen
+persze lehet tenni: a hamisítás módszereit a túloldalon is jól ismerik,
+be lehet lőni, hogy mi „kemény” adat, ami azért nem valószínű, hogy
+nagyon odébbmászna, a véletlen tévedések ellen is lehet védekezni,
+például megkövetelni, hogy egy kód többször is előforduljon, esetleg
+adott időszakon belül, külön lehet vizsgálni a fekvő- és járóbeteg
+ellátást, sőt, akár a gyógyszerkasszát is hozzá lehet venni, ha mondjuk
+a betegséghez biztosan kell szedni valamilyen gyógyszert, de még olyanra
+is van példa, ahol úgy próbálták körbebástyázni a dolgot, hogy azt
+nézték, hogy adott diagnosztikai eljárást elvégeztek-e a betegnél, mert
+ha tényleg a vizsgált baja volt, akkor az kötelező. Ennek milliónyi
+részlete van, most az egésszel csak annyira akartam kilyukadni, hogy
+nagyon-nagyon nem annyi a dolog, hogy beírjuk, hogy „kód = X”, majd
+ütünk egy entert és a kezünkbe hullik a válasz, a jó minőségű
+lekérdezéshez a területet orvosilag ismerő szakértőkkel kell
+konzultálni, finanszírozás rejtelmeit ismerő szakértőkkel kell
+konzultálni, és könnyen lehet, hogy a végén egy kilométer hosszú
+lekérdezés fog kijönni. Ami ráadásul csak az adott konkrét betegségre
+lesz jó, értelemszerűen, egy másik betegségnél lehet az egészet elölről
+kezdeni. A másik probléma, hogy az adminisztratív/finanszírozási adatok
+nem tartalmaznak klinikai részleteket. Nem lehet megtudni, hogy az alany
+dohányzik-e, sportol-e, továbbá bár azt látjuk, hogy készült mondjuk egy
+röntgenje, de hogy azon mi látszódott, arról fogalmunk sem lesz.
+Cserében azonban ott van az a hatalmas előny, hogy az ország praktikusan
+minden lakosáról, hosszú időbeli átfogással, többlet-adatszolgáltatás
+nélkül lehet információt szerezni. Összességében véve az
+adminisztratív/finanszírozási adatok felhasználása egy csábító
+lehetőség, de [sok
+csapdával](https://econtent.hogrefe.com/doi/full/10.1024/0301-1526/a000823),
+amiket tudatosan kell végiggondolni. És még egyetlen dolog a végére:
+akármilyen megoldást is választunk, alapvető kérdésnek tartom a
+*transzparenciát*. Mind a használt módszertanra vonatkozóan, melyet
+széleskörű, nyilvánosan lefolytatott szakmai egyeztetés alapján kell
+meghatározni, mind a végeredmény tekintetében: a kapott eredményeket,
+természetesen az adatvédelmi szabályoknak megfelelő módon – például
+kizárólag járási incidenciákat közölve – bárki számára elérhetően,
+kutathatóan, részletes magyarázattal, meta-adatokkal ellátva közölni
+kell. Kérdés, hogy ennek megvalósulása a [mai magyar
+helyzetben](https://github.com/tamas-ferenci/GondolatokAJarvanyugyiAdatokKozleserol)
+mennyire csak illúzió a részemről…)
 
 És a végére még egy gondolat. Valakiben felmerülhet az ötlet, hogy akkor
 miért nem határozzuk meg a szükséges kórházak optimális darabszámát
