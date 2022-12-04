@@ -1869,8 +1869,10 @@ ggplot(data.frame(n = 1:length(LocationResult),
 
 ![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
-Az eredményeket konkrétan is letölthetővé tettem (a pontos futásidőkkel,
-átlagos elérési időkkel, és a településlistákkal).
+Az eredményeket konkrétan is
+[letölthetővé](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/LocRes.csv)
+tettem (a pontos futásidőkkel, átlagos elérési időkkel, és a
+településlistákkal).
 
 Kitérőként megjegyzem, hogy ez egy – nagyon primitív és végletekig
 leegyszerűsített, de mégis csak – példa arra, amit *szükséglet-alapú*
@@ -2556,7 +2558,7 @@ $y_{ij}$ azt, hogy az $i$ indexű település lakóinak a $j$ indexű
 településen lévő kórházba kell menniük. (Ekkor persze muszáj, hogy ott
 legyen is kórház – erre mindjárt visszatérünk.) Látható tehát, hogy
 $y_{ij}$ egy bináris változó, azaz csak 0 és 1 értéket vehet fel:
-$y_{ij} \in\left\{0, 1\right\}$. Első ránézésre meglepő lehet, hogy
+$y_{ij} \in\lbrace 0, 1 \rbrace$. Első ránézésre meglepő lehet, hogy
 sehol nem kötöttük ki, hogy mindenki a hozzá legközelebbi kórházba kell,
 hogy menjen, de nincs félreértés: *tényleg* nem kötjük ezt ki! Erre
 ugyanis nincs szükség: semmi baj nem történik, ha a feltételek elvileg
@@ -2587,8 +2589,8 @@ viszont javítaná a célfüggvényt, de ezt ki kell zárnunk.)
 
 A második a kórházak léte. Valahogy nyomon kell követnünk, hogy hol van
 kórház: jelölje $x_j$ azt, hogy a $j$ indexű településen van kórház. Ez
-természetesen szintén bináris, $x_{j} \in\left\{0, 1\right\}$. Azt kell
-kifejeznünk, hogy ha $y_{ij}=1$, azaz az $i$-edik településből a
+természetesen szintén bináris, $x_{j} \in \lbrace 0, 1 \rbrace$. Azt
+kell kifejeznünk, hogy ha $y_{ij}=1$, azaz az $i$-edik településből a
 $j$-edikbe küldjük a betegeket, akkor ott, tehát $j$-ben, kell is, hogy
 legyen kórház. Mivel ez azt jelenti, hogy akkor $x_j=1$ kell legyen, így
 ez legegyszerűbben úgy tehető meg, ha azt kötjük ki, hogy
@@ -2714,7 +2716,7 @@ Nézzük a lehetőségeket!
 
 A [GLPK](https://www.gnu.org/software/glpk/) használatát R alatt az
 [Rgplk](https://cran.r-project.org/web/packages/Rglpk/index.html) és a
-[glpkAPI](https://cran.r-project.org/web/packages/glpkAPI/glpkAPI.pdf)
+[glpkAPI](https://cran.r-project.org/web/packages/glpkAPI/index.html)
 csomag is támogatja; mivel az utóbbi kicsit nyakatekertnek tűnik, az
 előbbit használtam.
 
