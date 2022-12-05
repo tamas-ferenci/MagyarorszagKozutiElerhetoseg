@@ -585,11 +585,15 @@ pontok a síkban helyezkednek el, és minden irányban lehetnek
 szomszédaik, másrészt nem szép szabályos rácspontokban vannak, hanem
 össze-vissza. Mindezek kezelésére vannak bevált algoritmusok, mi most
 [Akima módszerét](https://dl.acm.org/doi/10.1145/355780.355786) fogjuk
-használni (amit az R-ben az `akima` csomag megvalósít). Ez végrehajtja
-az interpolációt, majd az eredményeket egyenletes rácspontokban adja
-vissza, melyek lefedik az ország területét. Ez utóbbi miatt még egy
-lépésre szükség van: ki kell szűrnünk azokat a pontokat, amik az ország
-határain kívül vannak, hiszen a fenti rácsnak lesznek ilyen pontjai is.
+használni; ezt az R-ben az `akima` csomag valósítja meg. (Interpoláció
+helyett használhatnánk ügyesebb simítást is, például spline-okat, de
+jelen esetben nincs sok értelme: a pontok nagyon sűrűn vannak, így egy
+ilyen simítás csak jóval lassabb lenne, miközben nem igazán nyernénk
+vele semmit.) Az `akima::interp` végrehajtja az interpolációt, majd az
+eredményeket egyenletes rácspontokban adja vissza, melyek lefedik az
+ország területét. Ez utóbbi miatt még egy lépésre szükség van: ki kell
+szűrnünk azokat a pontokat, amik az ország határain kívül vannak, hiszen
+a fenti rácsnak lesznek ilyen pontjai is.
 
 Ezzel kapjuk a végleges ábránkat, az ország minden településének
 elérhetőségét a 0 kilométerkőtől indulva:
@@ -1808,7 +1812,10 @@ ggplot(data.frame(n = 1:length(LocationResult), time = sapply(LocationResult, fu
 Látható, hogy a dolog teljesen vállalható, még nagyobb kórházszám esetén
 is! (Sőt, érdekes módon egy ponton túl ez még jót is tesz. Ennek az okát
 én sem tudom – sajnos az operációkutatáshoz nagyon kevéssé értek – talán
-a probléma struktúrája válik olyanná, ami segíti az algoritmust.)
+a probléma struktúrája válik olyanná, ami segíti az algoritmust. Külön
+érdekes, hogy mi történik 26 kórháznál: kétszer is lefuttattam két külön
+gépen, és így nézett ki az eredmény, szóval ez valószínűleg nem
+valamiféle hiba, hanem ez is a probléma struktúrájából adódik.)
 
 Ezen felbuzdulva akkor nézzük is meg az eredményeket! Piros ponttal
 jelölöm a kórházak helyét, a háttérben lévő szín – a szokásos simítással
