@@ -190,6 +190,7 @@ durations <- fread("osrmdurations.csv")
 durations <- as.matrix(durations)
 rownames(durations) <- colnames(durations) <- locs$NAME
 durations <- durations/60/60
+durationsSymm <- (durations + t(durations))/2
 kableExtra::column_spec(knitr::kable(durations[1:5, 1:5], format = "html"), 1, bold = TRUE)
 ```
 
@@ -339,7 +340,7 @@ furcsa lenne, és persze [nincs is
 célszerűbb lehet szimmetrizálni a mátrixot (kiátlagolni a két értéket;
 mátrixos nyelven szólva: összeadva a mátrixot a transzponáltjával és
 elosztva 2-vel); az előbbiekből látható, hogy nagy módosítást ez nem
-jelent.
+jelent, most ezt is kiszámoljuk.
 
 A későbbi feldolgozáshoz célszerű lehet, ha átrendezzük egy olyan
 formátumba az adatokat, melyben minden sor egy pár (adattudósok úgy
@@ -350,6 +351,10 @@ adat kényelmesen tárolható egyetlen objektumban:
 durationsLong <- as.data.table(reshape2::melt(durations, value.name = "Duration"))
 durationsLong$Var1 <- as.character(levels(durationsLong$Var1))[durationsLong$Var1]
 durationsLong$Var2 <- as.character(levels(durationsLong$Var2))[durationsLong$Var2]
+durationsSymmLong <- as.data.table(reshape2::melt(durationsSymm, value.name = "Duration"))
+durationsSymmLong$Var1 <- as.character(levels(durationsSymmLong$Var1))[durationsSymmLong$Var1]
+durationsSymmLong$Var2 <- as.character(levels(durationsSymmLong$Var2))[durationsSymmLong$Var2]
+saveRDS(durationsSymmLong, "durationsSymmLong.rds")
 fwrite(durationsLong, "durationsLong.csv", dec = ",", sep = ";", bom = TRUE)
 if(!file.exists("durationsLong.zip")) zip("durationsLong.zip", "durationsLong.csv")
 knitr::kable(head(durationsLong))
@@ -2140,23 +2145,24 @@ ami bár kissé koros, ám a mai napig a legjobb algoritmusnak tarják nagy
 TSP-problémák egzakt kezelésére. Ennek van egy saját adatformátuma, de
 szerencsére a `TSPLIB` nevű R könyvtárral könnyen kimenthetjük az
 adatainkat ebben a formában. Két dologra kell csak figyelni. Az egyik,
-hogy érdemes szimmetrizálni a távolságmátrixot: mivel, mint láttuk is, a
-mátrix közel szimmetrikus, így ez sokat nem oszt vagy szoroz, cserében
-viszont sokkal-sokkal egyszerűbb lesz a probléma számítástechnikai
-szempontból. A másik egy informatikai korlát: a Concorde kizárólag egész
-számokat hajlandó megenni távolságként. Ha a súlyok (idők) nem egész
-számok, mint ahogy most természetesen nem azok, akkor úgy oldhatjuk meg
-a problémát – ezt a `TSPLIB` beépítetten el is végzi – hogy a
-tizedesvesszőt odébbrakjuk (minden számot felszorzunk $10^k$-nal), és
-persze nem feledkezünk meg arról, hogy az eredmény is ennyivel fel lesz
-szorozva, azaz abban a tizedesvesszőt ugyanannyival vissza kell rakni.
-Az egyetlen probléma $k$ megválasztása: annál pontosabbak vagyunk, minél
-nagyobb ez, de túl nagy sem lehet, különben akkorák lesznek a számok,
-hogy nem férnek bele a számábrázolási tartományba. Pár próbálkozás árán
-kisül, hogy 4 a legnagyobb szám, amivel lefut majd az algoritmus:
+hogy érdemes a szimmetrizált távolságmátrixot használni: mivel, mint
+láttuk is, a mátrix közel szimmetrikus, így ez sokat nem oszt vagy
+szoroz, cserében viszont sokkal-sokkal egyszerűbb lesz a probléma
+számítástechnikai szempontból. A másik egy informatikai korlát: a
+Concorde kizárólag egész számokat hajlandó megenni távolságként. Ha a
+súlyok (idők) nem egész számok, mint ahogy most természetesen nem azok,
+akkor úgy oldhatjuk meg a problémát – ezt a `TSPLIB` beépítetten el is
+végzi – hogy a tizedesvesszőt odébbrakjuk (minden számot felszorzunk
+$10^k$-nal), és persze nem feledkezünk meg arról, hogy az eredmény is
+ennyivel fel lesz szorozva, azaz abban a tizedesvesszőt ugyanannyival
+vissza kell rakni. Az egyetlen probléma $k$ megválasztása: annál
+pontosabbak vagyunk, minél nagyobb ez, de túl nagy sem lehet, különben
+akkorák lesznek a számok, hogy nem férnek bele a számábrázolási
+tartományba. Pár próbálkozás árán kisül, hogy 4 a legnagyobb szám,
+amivel lefut majd az algoritmus:
 
 ``` r
-TSP::write_TSPLIB(TSP::as.TSP((durations + t(durations))/2), "SymmDurationMatTSP.tsp", precision = 4)
+TSP::write_TSPLIB(TSP::as.TSP(durationsSymm), "SymmDurationMatTSP.tsp", precision = 4)
 ```
 
 Ha ez megvan, akkor le is futtathatjuk a Concorde-ot ezen az
