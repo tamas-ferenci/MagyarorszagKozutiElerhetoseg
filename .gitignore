@@ -38,4 +38,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
+# Custom
+
 durationsLong.csv
+korhazplots.rds
