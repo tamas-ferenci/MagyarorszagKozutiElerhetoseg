@@ -149,11 +149,21 @@ kisebb? Ez tehát nem csak, hogy nem probléma, hanem ellenkezőleg, egy
 potenciálisan nagyon izgalmas kutatási kérdés, a másik vetület azonban
 káros: a rövid távú hatások. Egy útlezárás, felújítási munka stb.
 megváltoztathatja a menetidőket, adott esetben nagyon rövid időre, és
-ebből fakadóan minden érdemi jelentőség nélkül, de ha a térképet pont
-ekkor töltöttük le, akkor ez megjelenhet benne. (Jobb ötletem nincs,
-mint hogy ez ellen úgy lehetne védekezni, ha egy évben többször töltjük
-le a térképet, és az eredményeket átlagoljuk. Most ilyet nem fogok
-végezni.)
+ebből fakadóan minden érdemi jelentőség nélkül. Ennél sokkal fontosabb a
+dugók kérdése: ez nem kiküszöbölendő, hanem egy beépítendő tényező,
+hiszen ezeknek igenis van érdemi jelentősége, pláne, hogy ebben vannak
+állandó mintázatok: melyik úton van tipikusan dugó, melyiken nincs, mi a
+helyzet nappal, éjszaka, csúcsidőben stb. Ez tehát egy nagyon is
+vizsgálatra érdemes szempont, van-e ahol az állandó dugók miatt lassabb
+eljutással kell számolni, hiába rövidebb az út, mennyire más a helyzet
+éjszaka indulva mint csúcsidőben és így tovább. A probléma, hogy bár az
+OSRM ma már
+[támogatja](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic) a
+forgalmi adatok felhasználását és figyelembevételét, én nem találtam
+adatforrást hozzá, ahonnan ezeket az információkat nyílt forrásból le
+lehetne tölteni. Ezt tehát továbbfejlesztési lehetőségként nyitva
+hagyom, addig is nagyon fontos rögzíteni, hogy a mostani eredmények
+konkrét forgalomtól független, átlagos sebességgel számolt értékek!
 
 A harmadik szűkítés, hogy jelen esszében kizárólag eljutási *idővel*
 fogok foglalkozni, *távolsággal* nem. Ennek egy rettenetesen
@@ -2236,6 +2246,7 @@ települését felkereshetjük autóval!
   mert van külön profil, így elvileg pillanatok alatt lecserélhető az
   egész számítás. Más esetek zűrösebbek, hiszen a vasúthoz vagy városi
   tömegközlekedéshez a menetrendre is szükség volna.
+- Forgalmi adatok figyelembevétele.
 - További gráfelméleti lehetőségek vizsgálata (pl. centralitások!).
 - Más térben történő gráfreprezentációk vizsgálata.
 - Szcenárióelemzések: mely összeköttetés megteremtése (új út építése)
