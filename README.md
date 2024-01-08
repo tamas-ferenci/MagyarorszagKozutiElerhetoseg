@@ -1,69 +1,79 @@
 Magyar települések közúti elérhetősége
 ================
-Ferenci Tamás (<tamas.ferenci@medstat.hu>)
+Ferenci Tamás (<https://www.medstat.hu/>)
 
-- <a href="#kérdésfelvetés" id="toc-kérdésfelvetés">Kérdésfelvetés</a>
-- <a href="#módszertan" id="toc-módszertan">Módszertan</a>
-- <a href="#eredmények" id="toc-eredmények">Eredmények</a>
-- <a href="#kis-történelmi-kitérő-az-izokrón-térképek-kapcsán"
-  id="toc-kis-történelmi-kitérő-az-izokrón-térképek-kapcsán">Kis
-  történelmi kitérő az izokrón térképek kapcsán</a>
-- <a href="#az-elérési-idők-eloszlása-a-legtávolibb-magyar-települések"
-  id="toc-az-elérési-idők-eloszlása-a-legtávolibb-magyar-települések">Az
-  elérési idők eloszlása, a legtávolibb magyar települések</a>
-- <a href="#az-egész-ország-átlagos-közelsége-egy-településről"
-  id="toc-az-egész-ország-átlagos-közelsége-egy-településről">Az egész
-  ország átlagos közelsége egy településről</a>
-- <a href="#az-ország-középpontja-avagy-hová-telepítsünk-kórházat"
-  id="toc-az-ország-középpontja-avagy-hová-telepítsünk-kórházat">Az ország
-  középpontja, avagy hová telepítsünk kórházat?</a>
-- <a
-  href="#a-magyar-tsp-megoldása-hogy-lehet-leggyorsabban-körbejárni-az-összes-magyar-települést"
-  id="toc-a-magyar-tsp-megoldása-hogy-lehet-leggyorsabban-körbejárni-az-összes-magyar-települést">A
-  magyar TSP megoldása: hogy lehet leggyorsabban körbejárni az összes
-  magyar települést?</a>
-- <a href="#továbbfejlesztési-ötletek-kutatási-lehetőségek"
-  id="toc-továbbfejlesztési-ötletek-kutatási-lehetőségek">Továbbfejlesztési
-  ötletek, kutatási lehetőségek</a>
-- <a href="#függelék-az-útvonaltervezés-technikai-részletei"
-  id="toc-függelék-az-útvonaltervezés-technikai-részletei">Függelék: Az
-  útvonaltervezés technikai részletei</a>
-  - <a href="#magyarország-térképe"
-    id="toc-magyarország-térképe">Magyarország térképe</a>
-  - <a href="#magyarország-településeinek-adatai"
-    id="toc-magyarország-településeinek-adatai">Magyarország településeinek
-    adatai</a>
-  - <a href="#az-osrm-letöltése-és-telepítése"
-    id="toc-az-osrm-letöltése-és-telepítése">Az OSRM letöltése és
-    telepítése</a>
-  - <a href="#a-térkép-letöltése-és-előkészítése"
-    id="toc-a-térkép-letöltése-és-előkészítése">A térkép letöltése és
-    előkészítése</a>
-  - <a href="#az-útvonaltervezés-végrehajtása"
-    id="toc-az-útvonaltervezés-végrehajtása">Az útvonaltervezés
-    végrehajtása</a>
-- <a href="#függelék-a-kórháztelepítés-megoldása-lineáris-programozással"
-  id="toc-függelék-a-kórháztelepítés-megoldása-lineáris-programozással">Függelék:
-  A kórháztelepítés megoldása lineáris programozással</a>
-  - <a
-    href="#a-telepítési-program-felírása-lineáris-programozási-feladatként"
-    id="toc-a-telepítési-program-felírása-lineáris-programozási-feladatként">A
-    telepítési program felírása lineáris programozási feladatként</a>
-  - <a
-    href="#az-egészértékű-programozási-feladat-átírása-számítógépen-kezelhető-formára"
-    id="toc-az-egészértékű-programozási-feladat-átírása-számítógépen-kezelhető-formára">Az
-    egészértékű programozási feladat átírása számítógépen kezelhető
-    formára</a>
-  - <a
-    href="#az-egészértékű-programozási-feladat-számítógépes-megoldási-lehetőségei"
-    id="toc-az-egészértékű-programozási-feladat-számítógépes-megoldási-lehetőségei">Az
-    egészértékű programozási feladat számítógépes megoldási lehetőségei</a>
-  - <a href="#a-megoldási-lehetőségek-vizsgálata"
-    id="toc-a-megoldási-lehetőségek-vizsgálata">A megoldási lehetőségek
-    vizsgálata</a>
-  - <a href="#a-kórháztelepítési-probléma-megoldása-highs-zal"
-    id="toc-a-kórháztelepítési-probléma-megoldása-highs-zal">A
-    kórháztelepítési probléma megoldása HiGHS-zal</a>
+- [Összefoglaló](#összefoglaló)
+- [Kérdésfelvetés](#kérdésfelvetés)
+- [Módszertan](#módszertan)
+- [Eredmények](#eredmények)
+- [Kis történelmi kitérő az izokrón térképek
+  kapcsán](#kis-történelmi-kitérő-az-izokrón-térképek-kapcsán)
+- [Az elérési idők eloszlása, a legtávolibb magyar
+  települések](#az-elérési-idők-eloszlása-a-legtávolibb-magyar-települések)
+- [Az egész ország átlagos közelsége egy
+  településről](#az-egész-ország-átlagos-közelsége-egy-településről)
+- [Az ország középpontja, avagy hová telepítsünk
+  kórházat?](#az-ország-középpontja-avagy-hová-telepítsünk-kórházat)
+- [A magyar TSP megoldása: hogy lehet leggyorsabban körbejárni az összes
+  magyar
+  települést?](#a-magyar-tsp-megoldása-hogy-lehet-leggyorsabban-körbejárni-az-összes-magyar-települést)
+- [Továbbfejlesztési ötletek, kutatási
+  lehetőségek](#továbbfejlesztési-ötletek-kutatási-lehetőségek)
+- [Függelék: Az útvonaltervezés technikai
+  részletei](#függelék-az-útvonaltervezés-technikai-részletei)
+  - [Magyarország térképe](#magyarország-térképe)
+  - [Magyarország településeinek
+    adatai](#magyarország-településeinek-adatai)
+  - [Az OSRM letöltése és telepítése](#az-osrm-letöltése-és-telepítése)
+  - [A térkép letöltése és
+    előkészítése](#a-térkép-letöltése-és-előkészítése)
+  - [Az útvonaltervezés végrehajtása](#az-útvonaltervezés-végrehajtása)
+- [Függelék: A kórháztelepítés megoldása lineáris
+  programozással](#függelék-a-kórháztelepítés-megoldása-lineáris-programozással)
+  - [A telepítési program felírása lineáris programozási
+    feladatként](#a-telepítési-program-felírása-lineáris-programozási-feladatként)
+  - [Az egészértékű programozási feladat átírása számítógépen kezelhető
+    formára](#az-egészértékű-programozási-feladat-átírása-számítógépen-kezelhető-formára)
+  - [Az egészértékű programozási feladat számítógépes megoldási
+    lehetőségei](#az-egészértékű-programozási-feladat-számítógépes-megoldási-lehetőségei)
+  - [A megoldási lehetőségek
+    vizsgálata](#a-megoldási-lehetőségek-vizsgálata)
+  - [A kórháztelepítési probléma megoldása
+    HiGHS-zal](#a-kórháztelepítési-probléma-megoldása-highs-zal)
+
+## Összefoglaló
+
+- Számítógéppel letöltöttem Magyarország térképét, majd egy
+  útvonaltervező programmal meghatároztam a legrövidebb utat bármely két
+  magyar település között, közúton, autóval haladva. Ez az adatbázis
+  számos érdekes kérdés vizsgálatát teszi lehetővé.
+- Az egyik legkézenfekvőbb, hogy megnézhetjük, hogy adott településről
+  mennyi idő alatt érhető el az ország többi része. Ebből szép színes
+  térkép is gyártható, illetve megjeleníthetjük azt is, hogy hol van az
+  a határ, amit adott időn belül (pl. 1 órán belül, 2 órán belül stb.)
+  el lehet érni; ezt szokták izokrón térképnek nevezni. Ezt is
+  kirajzoltam az összes magyar településre.
+- Kiderül írásomból, hogy melyik a két „legtávolabbi” magyar település
+  közúton (spoiler: Kishódos és Felsőszölnök, a forgalom nélküli, de
+  szabályokat betartó közlekedéssel az elvi eljutási idő majdnem 7,5
+  óra).
+- Kiderül, hogy mi az „ország középpontja”, azaz az a település, ahonnan
+  az összes többi átlagosan a legrövidebb idő alatt érhető el. Ezt
+  nézhetjük lélekszámmal súlyozva is, mondván, hogy a nagyobb
+  településekre való eljutás ideje nagyobb súllyal essen latba. De akár
+  azt is megkérdezhetjük, hogy melyik település az, amire igaz, hogy a
+  tőle legtávolabbi település távolsága a lehető legkisebb…?
+- A dolgot tovább is vihetjük: a „középpont” felfogható úgy is, mint
+  ahová mondjuk egy kórházat érdemes telepíteni, ha egyetlen kórház van
+  az országban. De hová rakjuk a kórházakat (továbbra is az eljutási
+  időt minimalizálva), ha 2 van? Ha 3? 10? 50? Megmutatom e feladat
+  megoldását is, melyhez operációkutatási eszközöket fogunk bevetni; itt
+  hosszabban beszélek ezen eredmény limitációiról is.
+- Az összes számításomat és eredményemet teljesen transzparensen közlöm:
+  mind a nyers adatokat megadom, mind a kódokat valamennyi számítás
+  mögött, melyek együtt lehetővé teszik munkám teljes reprodukálását és
+  ellenőrzését. A dolgozat végén több továbbfejlesztési lehetőségre,
+  további érdekes kutatási irányra is utalok.
 
 ## Kérdésfelvetés
 
@@ -100,8 +110,12 @@ távolságot. Ugyanezt fogjuk most megtenni, csak kihasználva az
 informatika lehetőségeit sokkal alaposabban és átfogóbban, valamint a
 kapott eredményeknek többféle alkalmazását is ki fogjuk próbálni.
 
-![Közúti eljutási idők Budapestről az ország egyes
-pontjaiba](README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png)
+<figure>
+<img src="README_files/figure-gfm/BudapestKozutiEljutasiIdo-1.png"
+alt="Közúti eljutási idők Budapestről az ország egyes pontjaiba" />
+<figcaption aria-hidden="true">Közúti eljutási idők Budapestről az
+ország egyes pontjaiba</figcaption>
+</figure>
 
 ## Módszertan
 
@@ -557,7 +571,8 @@ arányosan, így egy látványos, azonnal áttekinthető ábrává konvertáljuk
 ezt a nagyon hosszú adathalmazt:
 
 ``` r
-ggplot(merge(geodata, merge(locs, durationsLong[Var1=="Budapest 01. kerület", .(NAME = Var2, Duration)])),
+ggplot(merge(geodata, merge(locs, durationsLong[Var1=="Budapest 01. kerület",
+                                                .(NAME = Var2, Duration)])),
        aes(x = X, y = Y, fill = Duration)) + geom_sf(color = NA) +
   labs(x = "", y = "", fill = "Eljutási idő [h]", caption = captionlab)
 ```
@@ -659,16 +674,17 @@ contourplotter <- function(datain, geodatain, lab, telepules = NA, hascontour = 
                            filllims = NULL) {
   telepulescontour <- datain[, with(akima::interp(X, Y, value, nx = 1000, ny = 1000),
                                     cbind(CJ(Y = y, X = x), value = c(z))[!is.na(value)])]
-  telepulescontour <- telepulescontour[sapply(st_intersects(st_as_sf(telepulescontour, coords = c("X", "Y"),
-                                                                     crs = st_crs(geodatain)), geodatain),
-                                              length)==1]
+  telepulescontour <- telepulescontour[sapply(st_intersects(st_as_sf(telepulescontour,
+                                                                     coords = c("X", "Y"),
+                                                                     crs = st_crs(geodatain)),
+                                                            geodatain), length)==1]
   
   telepulescontour2 <- datain[, with(akima::interp(X, Y, value, nx = 40, ny = 40),
                                      cbind(CJ(Y = y, X = x), value = c(z))[!is.na(value)])]
   telepulescontour2 <- telepulescontour2[sapply(st_intersects(st_as_sf(telepulescontour2,
                                                                        coords = c("X", "Y"),
-                                                                       crs = st_crs(geodatain)), geodatain),
-                                                length)==1]
+                                                                       crs = st_crs(geodatain)),
+                                                              geodatain), length)==1]
   
   ggplot(telepulescontour, aes(x = X, y = Y)) + geom_raster(aes(fill = value)) +
     {if(!is.na(telepules)) stat_sf_coordinates(data = geodatain[geodatain$NAME==telepules,],
@@ -742,7 +758,8 @@ szükséges kód:
 
 ``` r
 contourdata <- contourdata[, with(akima::interp(X, Y, Duration, nx = n, ny = n),
-                                  cbind(CJ(Y = y, X = x), Duration = c(z))[!is.na(Duration)]), .(Var1, n)]
+                                  cbind(CJ(Y = y, X = x), Duration = c(z))[!is.na(Duration)]),
+                           .(Var1, n)]
 ```
 
 Most jöhet a határokon kívüli pontok kidobása. Mivel a fenti tábla
@@ -782,16 +799,16 @@ for(loc in locs$NAME) {
                                 inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")
   
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".png"), p, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".pdf"), p, width = 16, height = 9, device = cairo_pdf)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.png"), p1, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.pdf"), p1, width = 16, height = 9, device = cairo_pdf)
 }
 ```
@@ -810,8 +827,12 @@ lásd Galton-deszka, Galton-Watson folyamat) 1881-ben. Nagyon tanulságos
 megnézni, alul láthatóak az időigények, a térkép London bázissal
 készült:
 
-![Francis Galton izokrón térképe
-1881-ből](Isochronic_Passage_Chart_Francis_Galton_1881.jpg)
+<figure>
+<img src="Isochronic_Passage_Chart_Francis_Galton_1881.jpg"
+alt="Francis Galton izokrón térképe 1881-ből" />
+<figcaption aria-hidden="true">Francis Galton izokrón térképe
+1881-ből</figcaption>
+</figure>
 
 Érdekes módon Magyarországról sem sokkal később készült izokrón térkép!
 Albrecht Penck német térképész 1887-ben
@@ -825,8 +846,12 @@ belül, többek között Budapest (azaz Buda-Pest) központtal is.
 1914-ben John G. Bartholomew publikálta izokrón térképének új kiadását
 (ugyanis már korábban is készített ilyet), szintén London középponttal:
 
-![John G. Bartholomew izokrón térképe
-1914-ből](1115IL_PL_CAR_01-web-header-v2.jpg)
+<figure>
+<img src="1115IL_PL_CAR_01-web-header-v2.jpg"
+alt="John G. Bartholomew izokrón térképe 1914-ből" />
+<figcaption aria-hidden="true">John G. Bartholomew izokrón térképe
+1914-ből</figcaption>
+</figure>
 
 A dolgot csak azért említem meg, mert egy izgalmas projekt [azt célozta
 meg](https://www.rome2rio.com/blog/2016/01/08/time-flies-according-to-these-maps-it-does/)
@@ -836,7 +861,12 @@ közlekedési lehetőségek mellett. [Nem minden nehézség
 nélkül](https://www.rome2rio.com/blog/2016/02/09/a-map-goes-unexpectedly-viral-with-help-from-reddit-gizmodo/),
 de megoldották a feladatot, íme az eredmény:
 
-![A Rome2Rio izokrón térképe 2016-ból](world-map-isochronic-2016.jpg)
+<figure>
+<img src="world-map-isochronic-2016.jpg"
+alt="A Rome2Rio izokrón térképe 2016-ból" />
+<figcaption aria-hidden="true">A Rome2Rio izokrón térképe
+2016-ból</figcaption>
+</figure>
 
 A dolog egyébként olyan sikert aratott, hogy egy térképgyártó
 felkarolta, úgyhogy ha valaki szeretné, a mai napig [rendelhet
@@ -896,7 +926,12 @@ mely vasúti eljutás alapján közöl izokrónokat. Például a tényleges
 menetrenden alapuló, de a legnagyobb elérhető sebesség alapján számolt
 térkép így néz ki:
 
-![Kogutowicz Károly izokrón térkép 1917-ből](Kogutowicz1918.png)
+<figure>
+<img src="Kogutowicz1918.png"
+alt="Kogutowicz Károly izokrón térkép 1917-ből" />
+<figcaption aria-hidden="true">Kogutowicz Károly izokrón térkép
+1917-ből</figcaption>
+</figure>
 
 (Fellelnem nem sikerült, de [úgy
 tűnik](https://adt.arcanum.com/hu/view/FoldrajziKozlemenyek_1913/?pg=158&layout=s)
@@ -916,8 +951,12 @@ izokrón-térképeket, az egykorú menetrendek és jármű-paraméterek alapján
 Így néz ki például az 1867-es évre rekonstruált budapesti bázisú izokrón
 térkép:
 
-![Czére Béla rekonstruált izokrón térképe 1867-re
-vonatkozóan](Czere1991.png)
+<figure>
+<img src="Czere1991.png"
+alt="Czére Béla rekonstruált izokrón térképe 1867-re vonatkozóan" />
+<figcaption aria-hidden="true">Czére Béla rekonstruált izokrón térképe
+1867-re vonatkozóan</figcaption>
+</figure>
 
 ## Az elérési idők eloszlása, a legtávolibb magyar települések
 
@@ -980,8 +1019,13 @@ egyikről átjutni a másikra! Érdemes ezt az eredményt a biztonság
 kedvéért más módszerrel is megerősíteni; így néz ki a Google Maps
 útvonalterve erre a település-párra:
 
-![Felsőszölönök és Kishódos távolsága a Google Maps szerint: 6 óra 10
-perc - 8 óra, forgalomtól függően](FelsoszolnokKishodos_GoogleMaps.png)
+<figure>
+<img src="FelsoszolnokKishodos_GoogleMaps.png"
+alt="Felsőszölönök és Kishódos távolsága a Google Maps szerint: 6 óra 10 perc - 8 óra, forgalomtól függően" />
+<figcaption aria-hidden="true">Felsőszölönök és Kishódos távolsága a
+Google Maps szerint: 6 óra 10 perc - 8 óra, forgalomtól
+függően</figcaption>
+</figure>
 
 Ezt, amit most kiszámoltunk, a gráfelméletben úgy szokták hívni, hogy
 mekkora a gráf átmérője. Itt érdemes egy rövid kitérőt tenni. A
@@ -1069,7 +1113,8 @@ A legjobb 10 elérési idejű település e metrika szerint:
 
 ``` r
 knitr::kable(head(AccessMetrics[order(unweighted),
-                                .(`Település` = NAME, `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
+                                .(`Település` = NAME,
+                                  `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
                   10), digits = 2)
 ```
 
@@ -1172,7 +1217,8 @@ A legrosszabb 10:
 
 ``` r
 knitr::kable(tail(AccessMetrics[order(unweighted),
-                                .(`Település` = NAME, `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
+                                .(`Település` = NAME,
+                                  `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
                   10), digits = 2)
 ```
 
@@ -2035,8 +2081,12 @@ volumen javítja a kimenetet. Illusztratív példaként egy részlet egy ma
 már [klasszikus kutatás](https://www.nejm.org/doi/10.1056/NEJMsa012337)
 eredményeiből:
 
-![Halálozás függése az évente ellátott
-esetszámtól](nejmsa012337_f2_A.png)
+<figure>
+<img src="nejmsa012337_f2_A.png"
+alt="Halálozás függése az évente ellátott esetszámtól" />
+<figcaption aria-hidden="true">Halálozás függése az évente ellátott
+esetszámtól</figcaption>
+</figure>
 
 Az ábrán az látszik, hogy négy különböző műtéttípus esetén (ez a négy
 csoportja az oszlopoknak) hogyan alakul a – 30 napon belüli vagy kórházi
@@ -2197,7 +2247,8 @@ TSPsol <- c(t(TSPsol))
 TSPsol <- TSPsol[!is.na(TSPsol)]
 TSPsol <- TSPsol + 1
 
-TSPsolItinary <- data.table(Var1 = locs$NAME[TSPsol], Var2 = c(locs$NAME[TSPsol][-1], locs$NAME[TSPsol][1]))
+TSPsolItinary <- data.table(Var1 = locs$NAME[TSPsol],
+                            Var2 = c(locs$NAME[TSPsol][-1], locs$NAME[TSPsol][1]))
 TSPsolItinary <- merge(TSPsolItinary, durationsLong, by = c("Var1", "Var2"), sort = FALSE)
 fwrite(TSPsolItinary, "TSPsolItinary.csv", dec = ",", sep = ";", bom = TRUE)
 
@@ -2574,8 +2625,8 @@ tölthetjük le, egész Magyarország
 
 Ezt követően néhány előfeldolgozási lépésre van szükség a térképen, hogy
 alkalmas legyen a későbbi útvonaltervezéshez (most a gépjármű-profilt
-használjuk, hiszen az egész vizsgálódás erről szól, de pontosan ugyanígy
-:
+használjuk, hiszen az egész vizsgálódás erről szól, de pontosan
+ugyanígy:
 
     osrm-extract hungary-latest.osm.pbf -p ./profiles/car.lua
     osrm-partition hungary-latest.osrm
@@ -3059,8 +3110,8 @@ if(!file.exists("benchres2.rds")) {
 } else benchres2 <- readRDS("benchres2.rds")
 
 benchres2DF <- with(benchres2, data.frame(n, k, rep, median = as.numeric(median),
-                                        memory = as.numeric(mem_alloc)/1024/1024,
-                                        solver = bench:::as.character.bench_expr(expression)))
+                                          memory = as.numeric(mem_alloc)/1024/1024,
+                                          solver = bench:::as.character.bench_expr(expression)))
 
 ggplot(benchres2DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
   facet_wrap(~k) + geom_line(alpha = 0.5) +

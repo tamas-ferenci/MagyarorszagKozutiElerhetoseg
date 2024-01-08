@@ -1,7 +1,7 @@
 ---
 title: "Magyar települések közúti elérhetősége"
 author:
-  - Ferenci Tamás (tamas.ferenci@medstat.hu)
+  - Ferenci Tamás (https://www.medstat.hu/)
 output:
   github_document:
     pandoc_args: ["--lua-filter=pandoc-quotes.lua"]
@@ -27,6 +27,15 @@ JarasInd <- (HNTdata$Helység.megnevezése==HNTdata$Járás.székhelye)|(HNTdata
 captionlab <- paste0("Ferenci Tamás, http://www.medstat.hu/\nhttps://github.com/tamas-ferenci/",
                      "MagyarorszagKozutiElerhetoseg")
 ```
+
+## Összefoglaló
+
+- Számítógéppel letöltöttem Magyarország térképét, majd egy útvonaltervező programmal meghatároztam a legrövidebb utat bármely két magyar település között, közúton, autóval haladva. Ez az adatbázis számos érdekes kérdés vizsgálatát teszi lehetővé.
+- Az egyik legkézenfekvőbb, hogy megnézhetjük, hogy adott településről mennyi idő alatt érhető el az ország többi része. Ebből szép színes térkép is gyártható, illetve megjeleníthetjük azt is, hogy hol van az a határ, amit adott időn belül (pl. 1 órán belül, 2 órán belül stb.) el lehet érni; ezt szokták izokrón térképnek nevezni. Ezt is kirajzoltam az összes magyar településre.
+- Kiderül írásomból, hogy melyik a két "legtávolabbi" magyar település közúton (spoiler: Kishódos és Felsőszölnök, a forgalom nélküli, de szabályokat betartó közlekedéssel az elvi eljutási idő majdnem 7,5 óra).
+- Kiderül, hogy mi az "ország középpontja", azaz az a település, ahonnan az összes többi átlagosan a legrövidebb idő alatt érhető el. Ezt nézhetjük lélekszámmal súlyozva is, mondván, hogy a nagyobb településekre való eljutás ideje nagyobb súllyal essen latba. De akár azt is megkérdezhetjük, hogy melyik település az, amire igaz, hogy a tőle legtávolabbi település távolsága a lehető legkisebb...?
+- A dolgot tovább is vihetjük: a "középpont" felfogható úgy is, mint ahová mondjuk egy kórházat érdemes telepíteni, ha egyetlen kórház van az országban. De hová rakjuk a kórházakat (továbbra is az eljutási időt minimalizálva), ha 2 van? Ha 3? 10? 50? Megmutatom e feladat megoldását is, melyhez operációkutatási eszközöket fogunk bevetni; itt hosszabban beszélek ezen eredmény limitációiról is.
+- Az összes számításomat és eredményemet teljesen transzparensen közlöm: mind a nyers adatokat megadom, mind a kódokat valamennyi számítás mögött, melyek együtt lehetővé teszik munkám teljes reprodukálását és ellenőrzését. A dolgozat végén több továbbfejlesztési lehetőségre, további érdekes kutatási irányra is utalok.
 
 ## Kérdésfelvetés
 
@@ -99,7 +108,8 @@ knitr::kable(head(durationsLong[Var1=="Budapest 01. kerület"]))
 És most jön a lényeg. Hogyan ábrázoljuk ezt? Célszerűen térképen! Egyszerűen színezzük be az összes települést az itt látható idővel arányosan, így egy látványos, azonnal áttekinthető ábrává konvertáljuk ezt a nagyon hosszú adathalmazt:
 
 ```{r}
-ggplot(merge(geodata, merge(locs, durationsLong[Var1=="Budapest 01. kerület", .(NAME = Var2, Duration)])),
+ggplot(merge(geodata, merge(locs, durationsLong[Var1=="Budapest 01. kerület",
+                                                .(NAME = Var2, Duration)])),
        aes(x = X, y = Y, fill = Duration)) + geom_sf(color = NA) +
   labs(x = "", y = "", fill = "Eljutási idő [h]", caption = captionlab)
 ```
@@ -145,16 +155,17 @@ contourplotter <- function(datain, geodatain, lab, telepules = NA, hascontour = 
                            filllims = NULL) {
   telepulescontour <- datain[, with(akima::interp(X, Y, value, nx = 1000, ny = 1000),
                                     cbind(CJ(Y = y, X = x), value = c(z))[!is.na(value)])]
-  telepulescontour <- telepulescontour[sapply(st_intersects(st_as_sf(telepulescontour, coords = c("X", "Y"),
-                                                                     crs = st_crs(geodatain)), geodatain),
-                                              length)==1]
+  telepulescontour <- telepulescontour[sapply(st_intersects(st_as_sf(telepulescontour,
+                                                                     coords = c("X", "Y"),
+                                                                     crs = st_crs(geodatain)),
+                                                            geodatain), length)==1]
   
   telepulescontour2 <- datain[, with(akima::interp(X, Y, value, nx = 40, ny = 40),
                                      cbind(CJ(Y = y, X = x), value = c(z))[!is.na(value)])]
   telepulescontour2 <- telepulescontour2[sapply(st_intersects(st_as_sf(telepulescontour2,
                                                                        coords = c("X", "Y"),
-                                                                       crs = st_crs(geodatain)), geodatain),
-                                                length)==1]
+                                                                       crs = st_crs(geodatain)),
+                                                              geodatain), length)==1]
   
   ggplot(telepulescontour, aes(x = X, y = Y)) + geom_raster(aes(fill = value)) +
     {if(!is.na(telepules)) stat_sf_coordinates(data = geodatain[geodatain$NAME==telepules,],
@@ -191,7 +202,8 @@ Ez után jöhet az előbb említett előny, a `data.table` segítségével egyet
 
 ```{r, eval = FALSE}
 contourdata <- contourdata[, with(akima::interp(X, Y, Duration, nx = n, ny = n),
-                                  cbind(CJ(Y = y, X = x), Duration = c(z))[!is.na(Duration)]), .(Var1, n)]
+                                  cbind(CJ(Y = y, X = x), Duration = c(z))[!is.na(Duration)]),
+                           .(Var1, n)]
 ```
 
 Most jöhet a határokon kívüli pontok kidobása. Mivel a fenti tábla nagyon hosszú, és rengeteg ismétlődő koordináta van benne, így nem érdemes minden sorát külön szűrni. Jobban járunk, ha kiszedjük az egyedi koordinátákat, azokat szűrjük le aszerint, hogy az ország határain belül vannak, majd az így kapott táblázatot visszaegyesítjük a nagy táblánkkal (hozva a jelölést, hogy melyik koordináta van belül). Ezt használva aztán kiszűrhetjük a szükséges pontokat, sokkal gyorsabban, mintha minden ponton végigmennénk:
@@ -221,16 +233,16 @@ for(loc in locs$NAME) {
                                 inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")
   
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".png"), p, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 ".pdf"), p, width = 16, height = 9, device = cairo_pdf)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.png"), p1, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                              c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
                 "_izokron.pdf"), p1, width = 16, height = 9, device = cairo_pdf)
 }
 ```
@@ -323,7 +335,8 @@ A legjobb 10 elérési idejű település e metrika szerint:
 
 ```{r}
 knitr::kable(head(AccessMetrics[order(unweighted),
-                                .(`Település` = NAME, `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
+                                .(`Település` = NAME,
+                                  `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
                   10), digits = 2)
 ```
 
@@ -331,7 +344,8 @@ A legrosszabb 10:
 
 ```{r}
 knitr::kable(tail(AccessMetrics[order(unweighted),
-                                .(`Település` = NAME, `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
+                                .(`Település` = NAME,
+                                  `Súlyozatlan átlagos elérési idő (h)` = unweighted)],
                   10), digits = 2)
 ```
 
@@ -515,7 +529,8 @@ TSPsol <- c(t(TSPsol))
 TSPsol <- TSPsol[!is.na(TSPsol)]
 TSPsol <- TSPsol + 1
 
-TSPsolItinary <- data.table(Var1 = locs$NAME[TSPsol], Var2 = c(locs$NAME[TSPsol][-1], locs$NAME[TSPsol][1]))
+TSPsolItinary <- data.table(Var1 = locs$NAME[TSPsol],
+                            Var2 = c(locs$NAME[TSPsol][-1], locs$NAME[TSPsol][1]))
 TSPsolItinary <- merge(TSPsolItinary, durationsLong, by = c("Var1", "Var2"), sort = FALSE)
 fwrite(TSPsolItinary, "TSPsolItinary.csv", dec = ",", sep = ";", bom = TRUE)
 
@@ -703,7 +718,7 @@ A térképet a Geofabrik [oldaláról](https://download.geofabrik.de/) tölthetj
 
     wget https://download.geofabrik.de/europe/hungary-latest.osm.pbf
 
-Ezt követően néhány előfeldolgozási lépésre van szükség a térképen, hogy alkalmas legyen a későbbi útvonaltervezéshez (most a gépjármű-profilt használjuk, hiszen az egész vizsgálódás erről szól, de pontosan ugyanígy :
+Ezt követően néhány előfeldolgozási lépésre van szükség a térképen, hogy alkalmas legyen a későbbi útvonaltervezéshez (most a gépjármű-profilt használjuk, hiszen az egész vizsgálódás erről szól, de pontosan ugyanígy:
 
     osrm-extract hungary-latest.osm.pbf -p ./profiles/car.lua
     osrm-partition hungary-latest.osrm
@@ -1007,8 +1022,8 @@ if(!file.exists("benchres2.rds")) {
 } else benchres2 <- readRDS("benchres2.rds")
 
 benchres2DF <- with(benchres2, data.frame(n, k, rep, median = as.numeric(median),
-                                        memory = as.numeric(mem_alloc)/1024/1024,
-                                        solver = bench:::as.character.bench_expr(expression)))
+                                          memory = as.numeric(mem_alloc)/1024/1024,
+                                          solver = bench:::as.character.bench_expr(expression)))
 
 ggplot(benchres2DF, aes(x = n, y = median, color = solver, group = interaction(solver, rep))) +
   facet_wrap(~k) + geom_line(alpha = 0.5) +
