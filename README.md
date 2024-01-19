@@ -8,8 +8,8 @@ Ferenci Tamás (<https://www.medstat.hu/>)
 - [Eredmények](#eredmények)
 - [Kis történelmi kitérő az izokrón térképek
   kapcsán](#kis-történelmi-kitérő-az-izokrón-térképek-kapcsán)
-- [Az elérési idők eloszlása, a legtávolibb magyar
-  települések](#az-elérési-idők-eloszlása-a-legtávolibb-magyar-települések)
+- [A legtávolibb magyar települések](#a-legtávolibb-magyar-települések)
+- [Az elérési idők eloszlása](#az-elérési-idők-eloszlása)
 - [Az egész ország átlagos közelsége egy
   településről](#az-egész-ország-átlagos-közelsége-egy-településről)
 - [Az ország középpontja, avagy hová telepítsünk
@@ -958,27 +958,15 @@ alt="Czére Béla rekonstruált izokrón térképe 1867-re vonatkozóan" />
 1867-re vonatkozóan</figcaption>
 </figure>
 
-## Az elérési idők eloszlása, a legtávolibb magyar települések
+## A legtávolibb magyar települések
 
-Érdekes kérdés lehet az is, hogy mi az elérési idők eloszlása (az összes
-lehetséges település-pár között). Ezt mutatja a következő ábra:
-
-``` r
-ggplot(durationsLong[Var2 > Var1], aes(x = Duration)) +
-  geom_histogram(boundary = 0, bins = ceiling(log2(nrow(durationsLong[Var2 > Var1])))+1) +
-  scale_y_continuous(label = scales::comma) +
-  labs(x = "Elérési idő [h]", y = "Település-párok száma", caption = captionlab)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
-
-Ennek ilyen formában rettenetesen sok értelme nincsen (pláne, hogy
-minden település-pár azonos súllyal számít), de a szélsőérték érdekes. A
-legkisebb nem is annyira, hiszen persze vannak nagyon közeli települések
-(pláne, hogy a budapesti kerületek is külön településnek számítanak a
-mostani vizsgálatban), de az máris sokkal izgalmasabb, hogy vajon mi a
-*legnagyobb* elérési út? Melyik két település között vesz a legtöbb időt
-igénybe az eljutás? És mennyi ez az idő?
+Most hogy ismerjük az elérési időket, egy kérdés nagyon adja magát: mi
+ezek közül a *legnagyobb*, az összes lehetséges település-párt
+vizsgálva? (A legkisebb nem annyira izgalmas, hiszen vannak nagyon
+közeli települések, pláne, hogy a budapesti kerületek is külön
+településnek számítanak a mostani vizsgálatban.) Azaz, melyik két
+település között vesz a legtöbb időt igénybe az eljutás? És mennyi ez az
+idő?
 
 ``` r
 knitr::kable(durationsLong[which.max(Duration)])
@@ -1014,10 +1002,12 @@ Felsőszölnök
 </table>
 
 A válasz tehát: Felsőszölnök és Kishódos. Ez a két legtávolabbi magyar
-település (közúton és menetidőről beszélve); majdnem 7 és fél óra az
-egyikről átjutni a másikra! Érdemes ezt az eredményt a biztonság
-kedvéért más módszerrel is megerősíteni; így néz ki a Google Maps
-útvonalterve erre a település-párra:
+település közúton és menetidőről beszélve; majdnem 7 és fél óra az
+egyikről átjutni a másikra! (Fontos feleleveníteni, hogy ez forgalom
+nélküli, de szabályokat betartó, gépjárművel történő eljutási idő.)
+Érdemes ezt az eredményt a biztonság kedvéért más módszerrel is
+megerősíteni; így néz ki a Google Maps útvonalterve erre a
+település-párra:
 
 <figure>
 <img src="FelsoszolnokKishodos_GoogleMaps.png"
@@ -1066,6 +1056,117 @@ járat által érintett összes megálló össze van kötve egymással.) E
 kérdéskör alaposabb vizsgálata szintén egy lehetséges továbbfejlesztési
 irány.
 
+## Az elérési idők eloszlása
+
+Érdekes kérdés lehet az is, hogy mi az elérési idők eloszlása egy adott
+településről kiindulva. (Lényegében a térkép színei mögött lévő számokat
+vesszük ki, és vizsgáljuk meg.) Például Csobád esetében ez így néz ki:
+
+``` r
+ggplot(durationsLong[Var1=="Csobád"], aes(x = Duration)) +
+  geom_histogram(boundary = 0, bins = ceiling(log2(nrow(durationsLong[Var2 > Var1])))+1) +
+  scale_y_continuous(label = scales::comma) +
+  labs(x = "Elérési idő [h]", y = "Települések száma", caption = captionlab)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+Ez egy hisztogram: azt mutatja meg, hogy hány település van, ami a
+vizsgált kiindulóponttól egy adott elérési időre van, pontosabban szólva
+az elérési idők egy adott tartományába esik (például hány olyan van,
+aminek az elérési ideje 10 és 20 perc között van). Ez tehát egy
+sűrűség-jellegű ábra, hiszen azt mutatja, hogy adott elérési idő
+környékén milyen sűrűn fordulnak elő települések. A másik lehetséges
+ábrázolás az eloszlásfüggvény-jellegű ábra, ami nem azt mutatja, hogy
+hány település van adott elérési idő *környékén*, hanem azt, hogy mennyi
+van adott elérési idő *alatt*. Érdekes módon, bár általában
+adatvizualizációra jobb az előbbi, mert szabad szemmel sokkal
+felismerhetőbben mutatja a mintázatokat, itt most az utóbbi is jól
+megragadható: hány települést tudunk elérni adott időhatáron belül?
+Avagy, mivel a dolog szimmetrikus, hány településről vagyunk elérhetőek
+adott időkorláton belül. (Lényegében tehát azt kérdezzük, hogy hány
+település van a vizsgált település körüli adott sugarú körön belül,
+azzal, hogy itt nem „körzővel felmért” valódi körről beszélünk, hanem az
+izokrón vonalról, tehát, ahol nem a távolság állandó adott ponttól,
+hanem az elérési idő.) Íme a válasz Csobád esetében:
+
+``` r
+ggplot(durationsLong[Var1=="Csobád"], aes(x = Duration)) +
+  stat_ecdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * length(unique(durationsLong$Var1)),
+                                         name = "Elért települések száma [db]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért települések aránya [%]", caption = captionlab)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+Van azonban egy más jellegű problémakör is ezekkel az ábrákkal: nem
+igazán az a releváns mutató, hogy „darabra” számoljuk meg az adott időn
+belül elérhető településeket. Sokkal kézenfekvőbb lenne azt kérdezni:
+hány lakost tudunk elérni adott időn belül? Mivel a települések
+lélekszáma ismert, így ez is könnyen kiszámolható! Íme a válasz,
+továbbra is Csobád esetére:
+
+``` r
+durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
+                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
+
+ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Lakó.népesség)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", caption = captionlab)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+Ez az ábra ráadásul nagyon jól összehasonlíthatóvá teszi a
+településeket. Vessük például össze Csobádot a korábban szintén
+emlegetett, központi elhelyezkedésű budapesti 1. kerülettel:
+
+``` r
+ggplot(durationsLongPop[Var1%in%c("Csobád", "Budapest 01. kerület")],
+       aes(x = Duration, weights = Lakó.népesség, group = Var1, color = Var1)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", color = "", caption = captionlab) +
+  theme(legend.position = "bottom")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+Érdemes megfigyelni egyrészt, hogy az ábra milyen jól mutatja, hogy az
+ország valóban sokkal „közelebb van” az 1. kerületből, másrészt, hogy
+bár a színezett térkép nagyon látványos, bizonyos szempontból az ilyen
+ábra jobb összehasonlíthatóságot teremt meg.
+
+Végezetül, ha nagyon belelendülünk, akkor akár azt is megtehetjük, hogy
+ezt a görbét az *összes* településre kirajzoljuk. Ilyenkor érdemes a
+vonalakat erősen átlátszóvá tenni, különben – a nagyon sok görbe miatt –
+lényegében egyetlen fekete masszát kapnánk. Az átlátszóság révén viszont
+érzékelhetővé válik, hogy hol húzódnak sűrűbben a görbék, és hol
+ritkábban:
+
+``` r
+ggplot(durationsLongPop,
+       aes(x = Duration, weights = Lakó.népesség, group = Var1)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE, alpha = 0.01) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", caption = captionlab)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
 ## Az egész ország átlagos közelsége egy településről
 
 Most, hogy tudjuk, hogy adott településről mennyi idő alatt érhető el az
@@ -1081,24 +1182,23 @@ elérése, hanem, hogy legrosszabb esetben mennyi.) Ez utóbbi szokták
 worst-case számításnak hívni, a matematikusok inkább azt mondják, hogy
 minimax szabály.
 
-És még egy szempont ehhez: joggal vetődik fel, hogy a fenti számítások
-során nem ugyanúgy számítanak a különböző települések – könnyen lehet,
-hogy valaki számára nem ugyanolyan fontos, hogy egy adott települéről
-mennyi idő Budapestre eljutni, és mennyi Csobádra. Ez persze részben
-szubjektív (éppenséggel lehet valakinek a Budapestre eljutás kevésbé
-fontos), de egy objektív, és nagyon sok esetben előkerülő, sok mércével
-korreláló mérőszáma azért van a fontosságnak: a lélekszám. Ha azt
-mondjuk, hogy a nagyobb lélekszámú településekre fontosabb az eljutási
-idő, akkor egyszerű a megoldás: sima átlag helyett használjunk –
-lélekszámmal – súlyozott átlagot.
+És még egy szempont ehhez: joggal vetődik fel ugyanaz a kérdés, ami az
+előbb is, tehát, hogy a fenti számítások során nem ugyanúgy számítanak a
+különböző települések – könnyen lehet, hogy valaki számára nem
+ugyanolyan fontos, hogy egy adott települéről mennyi idő Budapestre
+eljutni, és mennyi Csobádra. Ez persze részben szubjektív (éppenséggel
+lehet valakinek a Budapestre eljutás kevésbé fontos), de egy objektív,
+és nagyon sok esetben előkerülő, sok mércével korreláló mérőszáma azért
+van a fontosságnak: a lélekszám. Ha azt mondjuk, hogy a nagyobb
+lélekszámú településekre fontosabb az eljutási idő, akkor egyszerű a
+megoldás: sima átlag helyett használjunk – lélekszámmal – súlyozott
+átlagot.
 
 Ennyi felvezetés után nézzük az eredményeket!
 
 A súlyozatlan átlagos közúti elérési idő az egyes településekről:
 
 ``` r
-durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
-                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
 AccessMetrics <- durationsLongPop[, .(unweighted = mean(Duration),
                                       weighted = weighted.mean(Duration, Lakó.népesség),
                                       max = max(Duration)) , .(NAME = Var1)]
@@ -1107,7 +1207,7 @@ contourplotter(merge(AccessMetrics[, .(NAME, value = unweighted)], locs, by = "N
                "Súlyozatlan átlagos\neljutási idő [h]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 A legjobb 10 elérési idejű település e metrika szerint:
 
@@ -1324,7 +1424,7 @@ contourplotter(merge(AccessMetrics[, .(NAME, value = weighted)], locs, by = "NAM
                "Lélekszámmal súlyozott\nátlagos eljutási idő [h]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 A legjobb 10 elérési idejű település e metrika szerint:
 
@@ -1541,7 +1641,7 @@ contourplotter(merge(AccessMetrics[, .(NAME, value = max)], locs, by = "NAME"), 
                "Legrosszabb\neljutási idő [h]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 A legjobb 10 elérési idejű település e metrika szerint:
 
@@ -1868,7 +1968,7 @@ ggplot(data.frame(n = 1:length(LocationResult), time = sapply(LocationResult, fu
   labs(x = "Telepített kórházak száma", y = "Futási idő [min]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 Látható, hogy a dolog teljesen vállalható, még nagyobb kórházszám esetén
 is! (Sőt, érdekes módon egy ponton túl ez még jót is tesz. Ennek az okát
@@ -1923,7 +2023,7 @@ for(i in 1:length(LocationResult)) egg::ggarrange(korhazplots[[i]], korhazbars[[
                                                   widths = c(7, 1))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-25-.gif)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-29-.gif)<!-- -->
 
 Érdemes külön is ábrázolni az országos átlagos elérési idő javulását a
 kórházak számának függvényében:
@@ -1935,7 +2035,7 @@ ggplot(data.frame(n = 1:length(LocationResult),
   labs(x = "Telepített kórházak száma", y = "Súlyozott átlagos elérési idő [h]")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 Az eredményeket a fenti vizualizációkon túl konkrétan is
 [letölthetővé](https://raw.githubusercontent.com/tamas-ferenci/MagyarorszagKozutiElerhetoseg/main/LocRes.csv)
@@ -2260,7 +2360,7 @@ ggplot(geodata) + geom_sf(color = NA) +
   metR::scale_y_latitude(ticks = 0.5, expand = waiver())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 A teljes itinert [innen](TSPsolItinary.csv) letölthetővé tettem – az
 érdeklődők ez alapján már neki is vághatnak hazánk felfedezésének!
@@ -2384,7 +2484,7 @@ térképfájlban). Például Balatoncsicsó így néz ki:
 plot(geodata[geodata$NAME=="Balatoncsicsó", "NAME"], main = "", key.pos = NULL)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 
 Megoldásként egyesítsük ezeket egyetlen objektumba:
 
@@ -2405,7 +2505,7 @@ hogy együtt kiadják Magyarország egész területét):
 plot(geodata["NAME"], main = "")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
 A térkép koordinátarendszerét átállítjuk WGS84-re (hogy szokásos
 koordinátákat lássunk; az OSRM is ilyen formában fogja majd várni a
@@ -3068,7 +3168,7 @@ ggplot(benchres1DF, aes(x = n, y = median, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
 
 Látszik, hogy az `lp_solve` eljárás érezhető lassabb mint a másik három.
 
@@ -3080,7 +3180,7 @@ ggplot(benchres1DF, aes(x = n, y = memory, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Memóriaigény [GB]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
 
 Az `lp_solve` memóriaigénye valami egészen elmebeteg módon elszáll,
 tehát biztosan nem érdemes vele számolni a továbbiakban.
@@ -3118,7 +3218,7 @@ ggplot(benchres2DF, aes(x = n, y = median, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-51-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
 
 Látszik, hogy a GLPK időigénye némileg nagyobb a többinél. Az is
 érzékelhető, hogy érdekes módon a nagy számú kórház optimalizálása
@@ -3132,7 +3232,7 @@ ggplot(benchres2DF, aes(x = n, y = memory, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Memóriaigény [MB]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-52-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
 
 Itt viszont a GLPK már nagyon egyértelműen kilóg, így ha az előbbi után
 volt is kétségünk, ez bizonyossá teszi, hogy tovább már csak a maradék
@@ -3175,7 +3275,7 @@ ggplot(benchres3DF, aes(x = n, y = median, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
 
 A most már nagyon eltérő időigények miatt érdemes az ábrát úgy is
 megnézni, hogy az egyes panelek függőleges tengelyének beosztása
@@ -3187,7 +3287,7 @@ ggplot(benchres3DF, aes(x = n, y = median, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Időigény [s]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-58-1.png)<!-- -->
 
 A helyzet most már nem egyértelmű, de egy leheletnyit a HiGHS tűnik
 jobbnak.
@@ -3200,7 +3300,7 @@ ggplot(benchres3DF, aes(x = n, y = memory, color = solver, group = interaction(s
   labs(x = "Városok száma", y = "Memóriaigény [MB]", color = "Megoldó")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-59-1.png)<!-- -->
 
 Ebben gyakorlatilag semmilyen értékelhető különbség nem mutatkozik.
 

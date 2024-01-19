@@ -283,24 +283,15 @@ Végezetül megjegyzem, hogy léteznek "visszamenőleges" izokrón térképek is
 
 ![Czére Béla rekonstruált izokrón térképe 1867-re vonatkozóan](Czere1991.png)
 
-## Az elérési idők eloszlása, a legtávolibb magyar települések
+## A legtávolibb magyar települések
 
-Érdekes kérdés lehet az is, hogy mi az elérési idők eloszlása (az összes lehetséges település-pár között). Ezt mutatja a következő ábra:
-
-```{r, fig.height = 5}
-ggplot(durationsLong[Var2 > Var1], aes(x = Duration)) +
-  geom_histogram(boundary = 0, bins = ceiling(log2(nrow(durationsLong[Var2 > Var1])))+1) +
-  scale_y_continuous(label = scales::comma) +
-  labs(x = "Elérési idő [h]", y = "Település-párok száma", caption = captionlab)
-```
-
-Ennek ilyen formában rettenetesen sok értelme nincsen (pláne, hogy minden település-pár azonos súllyal számít), de a szélsőérték érdekes. A legkisebb nem is annyira, hiszen persze vannak nagyon közeli települések (pláne, hogy a budapesti kerületek is külön településnek számítanak a mostani vizsgálatban), de az máris sokkal izgalmasabb, hogy vajon mi a _legnagyobb_ elérési út? Melyik két település között vesz a legtöbb időt igénybe az eljutás? És mennyi ez az idő?
+Most hogy ismerjük az elérési időket, egy kérdés nagyon adja magát: mi ezek közül a _legnagyobb_, az összes lehetséges település-párt vizsgálva? (A legkisebb nem annyira izgalmas, hiszen vannak nagyon közeli települések, pláne, hogy a budapesti kerületek is külön településnek számítanak a mostani vizsgálatban.) Azaz, melyik két település között vesz a legtöbb időt igénybe az eljutás? És mennyi ez az idő?
 
 ```{r}
 knitr::kable(durationsLong[which.max(Duration)])
 ```
 
-A válasz tehát: Felsőszölnök és Kishódos. Ez a két legtávolabbi magyar település (közúton és menetidőről beszélve); majdnem 7 és fél óra az egyikről átjutni a másikra! Érdemes ezt az eredményt a biztonság kedvéért más módszerrel is megerősíteni; így néz ki a Google Maps útvonalterve erre a település-párra:
+A válasz tehát: Felsőszölnök és Kishódos. Ez a két legtávolabbi magyar település közúton és menetidőről beszélve; majdnem 7 és fél óra az egyikről átjutni a másikra! (Fontos feleleveníteni, hogy ez forgalom nélküli, de szabályokat betartó, gépjárművel történő eljutási idő.) Érdemes ezt az eredményt a biztonság kedvéért más módszerrel is megerősíteni; így néz ki a Google Maps útvonalterve erre a település-párra:
 
 ![Felsőszölönök és Kishódos távolsága a Google Maps szerint: 6 óra 10 perc - 8 óra, forgalomtól függően](FelsoszolnokKishodos_GoogleMaps.png)
 
@@ -310,19 +301,84 @@ Ahogy említettem, az átmérő egy általános gráfelméleti tulajdonság, mi 
 
 Itt csak egyetlen szempontra hívnám fel a figyelmet: az a gráf, amit mi most használunk, nem a fizikai infrastruktúra gráfja (ahol a közvetlenül elérhető, közút által közvetlenül, tehát más települést nem érintő módon összekötött pontok vannak a gráfon is összekötve). Ezt mi kiegészítettük, jobban mondva áttranszformáltuk azáltal, hogy kiszámítottuk a leggyorsabb utakat az összes lehetséges pont között. Amiről itt szó van, az lényegében az, hogy ugyanazt az infrastruktúrát hogyan _reprezentáljuk_ gráffal, a fizikailag összekötött pontok legyenek összekötve, az elérhető pontok legyen összekötve stb. Amint láttuk, ezek között átjárás is lehetséges. Nem arról van szó, hogy valamelyik ezek közül "jó", más meg "rossz", egyszerűen más szempontból írják le az infrastruktúrát, így mást árulnak el az országról. (Ennek tömegközlekedési hálózatok kapcsán [kiterjedt irodalma van](https://link.springer.com/content/pdf/10.1140/epjb/e2009-00090-x.pdf), L terű reprezentáció az, ahol az útvonalon egymás után következő megállók vannak összekötve, P terű reprezentáció pedig az, ahol egy járat által érintett összes megálló össze van kötve egymással.) E kérdéskör alaposabb vizsgálata szintén egy lehetséges továbbfejlesztési irány.
 
+## Az elérési idők eloszlása
+
+Érdekes kérdés lehet az is, hogy mi az elérési idők eloszlása egy adott településről kiindulva. (Lényegében a térkép színei mögött lévő számokat vesszük ki, és vizsgáljuk meg.) Például Csobád esetében ez így néz ki:
+
+```{r}
+ggplot(durationsLong[Var1=="Csobád"], aes(x = Duration)) +
+  geom_histogram(boundary = 0, bins = ceiling(log2(nrow(durationsLong[Var2 > Var1])))+1) +
+  scale_y_continuous(label = scales::comma) +
+  labs(x = "Elérési idő [h]", y = "Települések száma", caption = captionlab)
+```
+
+Ez egy hisztogram: azt mutatja meg, hogy hány település van, ami a vizsgált kiindulóponttól egy adott elérési időre van, pontosabban szólva az elérési idők egy adott tartományába esik (például hány olyan van, aminek az elérési ideje 10 és 20 perc között van). Ez tehát egy sűrűség-jellegű ábra, hiszen azt mutatja, hogy adott elérési idő környékén milyen sűrűn fordulnak elő települések. A másik lehetséges ábrázolás az eloszlásfüggvény-jellegű ábra, ami nem azt mutatja, hogy hány település van adott elérési idő _környékén_, hanem azt, hogy mennyi van adott elérési idő _alatt_. Érdekes módon, bár általában adatvizualizációra jobb az előbbi, mert szabad szemmel sokkal felismerhetőbben mutatja a mintázatokat, itt most az utóbbi is jól megragadható: hány települést tudunk elérni adott időhatáron belül? Avagy, mivel a dolog szimmetrikus, hány településről vagyunk elérhetőek adott időkorláton belül. (Lényegében tehát azt kérdezzük, hogy hány település van a vizsgált település körüli adott sugarú körön belül, azzal, hogy itt nem "körzővel felmért" valódi körről beszélünk, hanem az izokrón vonalról, tehát, ahol nem a távolság állandó adott ponttól, hanem az elérési idő.) Íme a válasz Csobád esetében:
+
+```{r}
+ggplot(durationsLong[Var1=="Csobád"], aes(x = Duration)) +
+  stat_ecdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * length(unique(durationsLong$Var1)),
+                                         name = "Elért települések száma [db]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért települések aránya [%]", caption = captionlab)
+```
+
+Van azonban egy más jellegű problémakör is ezekkel az ábrákkal: nem igazán az a releváns mutató, hogy "darabra" számoljuk meg az adott időn belül elérhető településeket. Sokkal kézenfekvőbb lenne azt kérdezni: hány lakost tudunk elérni adott időn belül? Mivel a települések lélekszáma ismert, így ez is könnyen kiszámolható! Íme a válasz, továbbra is Csobád esetére:
+
+```{r}
+durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
+                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
+
+ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Lakó.népesség)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", caption = captionlab)
+```
+
+Ez az ábra ráadásul nagyon jól összehasonlíthatóvá teszi a településeket. Vessük például össze Csobádot a korábban szintén emlegetett, központi elhelyezkedésű budapesti 1. kerülettel:
+
+```{r}
+ggplot(durationsLongPop[Var1%in%c("Csobád", "Budapest 01. kerület")],
+       aes(x = Duration, weights = Lakó.népesség, group = Var1, color = Var1)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", color = "", caption = captionlab) +
+  theme(legend.position = "bottom")
+```
+
+Érdemes megfigyelni egyrészt, hogy az ábra milyen jól mutatja, hogy az ország valóban sokkal "közelebb van" az 1. kerületből, másrészt, hogy bár a színezett térkép nagyon látványos, bizonyos szempontból az ilyen ábra jobb összehasonlíthatóságot teremt meg.
+
+Végezetül, ha nagyon belelendülünk, akkor akár azt is megtehetjük, hogy ezt a görbét az _összes_ településre kirajzoljuk. Ilyenkor érdemes a vonalakat erősen átlátszóvá tenni, különben -- a nagyon sok görbe miatt -- lényegében egyetlen fekete masszát kapnánk. Az átlátszóság révén viszont érzékelhetővé válik, hogy hol húzódnak sűrűbben a görbék, és hol ritkábban:
+
+```{r}
+ggplot(durationsLongPop,
+       aes(x = Duration, weights = Lakó.népesség, group = Var1)) +
+  StatCompLab::stat_ewcdf(geom = "step", pad = FALSE, alpha = 0.01) +
+  scale_y_continuous(label = scales::percent,
+                     sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
+                                         name = "Elért lakosok száma [fő]",
+                                         label = scales::label_number())) +
+  labs(x = "Elérési idő [h]", y = "Elért lakosok aránya [%]", caption = captionlab)
+```
+
 ## Az egész ország átlagos közelsége egy településről
 
 Most, hogy tudjuk, hogy adott településről mennyi idő alatt érhető el az összes többi, elég kézenfekvően adja magát a kérdés, hogy honnan érhető el _átlagosan_ a legkönnyebben az ország? Azaz vesszük egy adott településnél az összes többi település elérési idejének az átlagát, és azt kérdezzük, hogy ez a szám melyik magyar településre lesz a legkisebb. Esetleg megtehetjük, hogy nem az átlagot vesszük, hanem a maximumot, ekkor arra a kérdésre válaszolunk, hogy melyik az a település amire a tőle a legtávolabbi település elérése a legkisebb? (Pesszimisták vagyunk, nem az érdekel minket, hogy átlagosan mennyi a többi település elérése, hanem, hogy legrosszabb esetben mennyi.) Ez utóbbi szokták worst-case számításnak hívni, a matematikusok inkább azt mondják, hogy minimax szabály.
 
-És még egy szempont ehhez: joggal vetődik fel, hogy a fenti számítások során nem ugyanúgy számítanak a különböző települések -- könnyen lehet, hogy valaki számára nem ugyanolyan fontos, hogy egy adott települéről mennyi idő Budapestre eljutni, és mennyi Csobádra. Ez persze részben szubjektív (éppenséggel lehet valakinek a Budapestre eljutás kevésbé fontos), de egy objektív, és nagyon sok esetben előkerülő, sok mércével korreláló mérőszáma azért van a fontosságnak: a lélekszám. Ha azt mondjuk, hogy a nagyobb lélekszámú településekre fontosabb az eljutási idő, akkor egyszerű a megoldás: sima átlag helyett használjunk -- lélekszámmal -- súlyozott átlagot.
+És még egy szempont ehhez: joggal vetődik fel ugyanaz a kérdés, ami az előbb is, tehát, hogy a fenti számítások során nem ugyanúgy számítanak a különböző települések -- könnyen lehet, hogy valaki számára nem ugyanolyan fontos, hogy egy adott települéről mennyi idő Budapestre eljutni, és mennyi Csobádra. Ez persze részben szubjektív (éppenséggel lehet valakinek a Budapestre eljutás kevésbé fontos), de egy objektív, és nagyon sok esetben előkerülő, sok mércével korreláló mérőszáma azért van a fontosságnak: a lélekszám. Ha azt mondjuk, hogy a nagyobb lélekszámú településekre fontosabb az eljutási idő, akkor egyszerű a megoldás: sima átlag helyett használjunk -- lélekszámmal -- súlyozott átlagot.
 
 Ennyi felvezetés után nézzük az eredményeket!
 
 A súlyozatlan átlagos közúti elérési idő az egyes településekről:
 
 ```{r}
-durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
-                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
 AccessMetrics <- durationsLongPop[, .(unweighted = mean(Duration),
                                       weighted = weighted.mean(Duration, Lakó.népesség),
                                       max = max(Duration)) , .(NAME = Var1)]
