@@ -35,6 +35,7 @@ captionlab <- paste0("Ferenci Tamás, http://www.medstat.hu/\nhttps://github.com
 - Kiderül írásomból, hogy melyik a két "legtávolabbi" magyar település közúton (spoiler: Kishódos és Felsőszölnök, a forgalom nélküli, de szabályokat betartó közlekedéssel az elvi eljutási idő majdnem 7,5 óra).
 - Kiderül, hogy mi az "ország középpontja", azaz az a település, ahonnan az összes többi átlagosan a legrövidebb idő alatt érhető el. Ezt nézhetjük lélekszámmal súlyozva is, mondván, hogy a nagyobb településekre való eljutás ideje nagyobb súllyal essen latba. De akár azt is megkérdezhetjük, hogy melyik település az, amire igaz, hogy a tőle legtávolabbi település távolsága a lehető legkisebb...?
 - A dolgot tovább is vihetjük: a "középpont" felfogható úgy is, mint ahová mondjuk egy kórházat érdemes telepíteni, ha egyetlen kórház van az országban. De hová rakjuk a kórházakat (továbbra is az eljutási időt minimalizálva), ha 2 van? Ha 3? 10? 50? Megmutatom e feladat megoldását is, melyhez operációkutatási eszközöket fogunk bevetni; itt hosszabban beszélek ezen eredmény limitációiról is.
+- Ezek a vizsgálatok elvégezhetőek nem csak Magyarország településeire, hanem egy településen belül is; ezt egy [egy másik írásom](https://github.com/tamas-ferenci/BudapestiElerhetoseg) mutatja be Budapest példáján.
 - Az összes számításomat és eredményemet teljesen transzparensen közlöm: mind a nyers adatokat megadom, mind a kódokat valamennyi számítás mögött, melyek együtt lehetővé teszik munkám teljes reprodukálását és ellenőrzését. A dolgozat végén több továbbfejlesztési lehetőségre, további érdekes kutatási irányra is utalok.
 
 ## Kérdésfelvetés
@@ -42,6 +43,8 @@ captionlab <- paste0("Ferenci Tamás, http://www.medstat.hu/\nhttps://github.com
 Sokan szinte nap mint nap használnak valamilyen útvonaltervező programot. Ilyenekkel pillanatok alatt megkereshetjük, hogy melyik a legrövidebb vagy leggyorsabb út két pont (legegyszerűbb esetben: két település) között, de ezt látva felvetődhet az emberben: akkor már miért nem bővítjük a vizsgálódásunk körét? Mi volna, ha _minden_ magyar település-pár között megkeresnénk a legrövidebb utat...? Nem is azért, hogy a navigációt javítsuk, arra tökéletesek ezek az alkalmazások, hanem azért, hogy a _rendszerről_, jelen esetben a magyar közúti rendszerről megtudjunk valamit! Hogyan épül fel? Mely települések érhetőek el gyorsabban, melyek lassabban? Adott településből hova lehet 1 órán belül eljutni? Igaz, hogy Budapest-centrikus az útvonalhálózat? Mennyire erős ez a hatás? Az ember eleresztheti jobban is a fantáziáját. Melyik két magyar település van a legtávolabb -- akár kilométerben, akár időben -- egymástól közúton? Mennyi a minimális út vagy idő, ami ahhoz szükséges, hogy az összes magyar települést autóval felkeressük? (És mi az optimális útvonal?) Melyik az a település, amire igaz, hogy a tőle vett távolságok átlaga a legkisebb, azaz, ahonnan az átlagosan legkönnyebb bárhová eljutni az országba? Na és amire igaz, hogy a tőle legtávolabbi település távolsága a legkisebb? (A dolog persze szimmetrikus: akkor ide a legkönnyebb eljutni bárhonnan. Hova érdemes kórházat telepíteni, ha azt szeretnénk, hogy a leggyorsabban elérhető legyen, átlagosan, vagy legrosszabb esetben is?)
 
 Ezekre a kérdésekre fogok a jelen esszében megpróbálni válaszolni.
+
+(Természetesen ezek a kérdések nem csak a különböző települések közötti eljutás kapcsán tehetőek fel, hanem egy település különböző pontjai között eljutásra vonatkozóan is. Egy [másik írásom](https://github.com/tamas-ferenci/BudapestiElerhetoseg) ezt mutatja be Budapest példáján.)
 
 A problémakört szép nevén _közúti elérhetőségnek_ lehetne nevezni. Valójában nincs szó nagy újdonságról, sokaknak ismerős lehet a régi autóstérképekről a kis táblázat, mely a nagy városok között tüntette fel -- táblázat alakban elrendezve az összes lehetséges pár között -- a távolságot. Ugyanezt fogjuk most megtenni, csak kihasználva az informatika lehetőségeit sokkal alaposabban és átfogóbban, valamint a kapott eredményeknek többféle alkalmazását is ki fogjuk próbálni.
 
@@ -55,7 +58,7 @@ Több útvonaltervező alkalmazás van széles körű használatban, azonban nem
 - Az egész ország térképe letölthető (erre a célra a [Geofabrik](https://download.geofabrik.de/) oldalát használtam), így minden számítás elvégezhető off-line, a helyi számítógépen, internet szüksége nélkül.
 - Elérhető hozzá olyan program, amely nagyon jó tulajdonságú és gyors útvonaltervezést végez a térkép alapján, ez az [OSRM](http://project-osrm.org/) (Open Source Routing Machine), ami ráadásul ingyenesen és nyílt forráskódú.
 
-A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit [külön pontban](#függelék-az-útvonaltervezés-technikai-részletei) tárgyalom meg.
+A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a technikai részleteit [külön pontban](#az-útvonaltervezés-technikai-részletei) tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag _közúti_ eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés bármilyen más közlekedési módra, legyen az bicikli, gyaloglás, vagy akár tömegközlekedés. Ezek vizsgálata továbbfejlesztési lehetőség; annyit jegyzek meg, hogy az előbbiek vizsgálata nem nehéz, hiszen pontosan ugyanaz a térkép, és ugyanaz az útvonaltervező használható (lényegében csak az ún. profilt kell lecserélni az OSRM-ben), az utóbbi azonban zűrösebb, hiszen a menetrendre is szükség van a vizsgálatához.
 
@@ -233,16 +236,20 @@ for(loc in locs$NAME) {
                                 inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")
   
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 ".png"), p, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 ".pdf"), p, width = 16, height = 9, device = cairo_pdf)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 "_izokron.png"), p1, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 "_izokron.pdf"), p1, width = 16, height = 9, device = cairo_pdf)
 }
 ```
@@ -328,9 +335,9 @@ Van azonban egy más jellegű problémakör is ezekkel az ábrákkal: nem igazá
 
 ```{r}
 durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
-                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
+                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Pop = Lakó.népesség)]
 
-ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Lakó.népesség)) +
+ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Pop)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -343,7 +350,7 @@ Ez az ábra ráadásul nagyon jól összehasonlíthatóvá teszi a települések
 
 ```{r}
 ggplot(durationsLongPop[Var1%in%c("Csobád", "Budapest 01. kerület")],
-       aes(x = Duration, weights = Lakó.népesség, group = Var1, color = Var1)) +
+       aes(x = Duration, weights = Pop, group = Var1, color = Var1)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -359,7 +366,7 @@ Végezetül, ha nagyon belelendülünk, akkor akár azt is megtehetjük, hogy ez
 
 ```{r}
 ggplot(durationsLongPop,
-       aes(x = Duration, weights = Lakó.népesség, group = Var1)) +
+       aes(x = Duration, weights = Pop, group = Var1)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE, alpha = 0.01) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -380,8 +387,8 @@ A súlyozatlan átlagos közúti elérési idő az egyes településekről:
 
 ```{r}
 AccessMetrics <- durationsLongPop[, .(unweighted = mean(Duration),
-                                      weighted = weighted.mean(Duration, Lakó.népesség),
-                                      max = max(Duration)) , .(NAME = Var1)]
+                                      weighted = weighted.mean(Duration, Pop),
+                                      max = max(Duration)), .(NAME = Var1)]
 
 contourplotter(merge(AccessMetrics[, .(NAME, value = unweighted)], locs, by = "NAME"), geodata,
                "Súlyozatlan átlagos\neljutási idő [h]")
@@ -477,7 +484,7 @@ Akkor tehát reménytelen a helyzet? Pláne, ha 10, 20 vagy mondjuk 50 kórháza
 
 Nem. Szerencsére nem, meghatározhatjuk az optimális telepítést, mégpedig egzaktan, mindenféle közelítés nélkül, és akár 50 kórházra is -- csak épp a fenti "brute force" algoritmusnál okosabban kell eljárnunk. (Jó példa arra, hogy megoldhatatlannak tűnő problémák is megoldhatóvá válhatnak, ha jobb eszközt választunk.) Jelen esetben nem is az a fontos, hogy mi magunk kitaláljuk a szuper-algoritmust, hiszen az ilyenek elmélete egy komplett tudományterület, valószínűleg nem sok jó sül ki abból, ha ezt a nulláról megpróbáljuk magunk kitalálni. A fontos e helyett az, hogy _átírjuk_ a problémát egy olyan keretre, aminél ez a -- kész -- tudás bevethető, amire vannak nagy tudású, rendkívül optimalizált algoritmusok. Ha ugyanis a problémát el tudjuk ilyen keretben mondani, akkor nincs más dolgunk, mint ezeket bevetni a megoldásra.
 
-Jelen esetben a célravezető az, ha a problémát átfogalmazzunk matematikai optimalizálási (lineáris programozási, még pontosabban egészértékű programozási) problémává, majd bevetjük az arra a területre ismert -- nagyon hatékony! -- algoritmusok valamelyikét. Ennek a matematikai részleteit egy [külön pontban](#függelék-a-kórháztelepítés-megoldása-lineáris-programozással) mesélem el. Ami számunkra fontos, hogy ez a módszer _drámaian_ gyorsabb, miközben továbbra is egzakt eredményt szolgáltat! Nézzük a futásidőket ezzel a módszerrel (idézzük fel a brute force megoldás számait!):
+Jelen esetben a célravezető az, ha a problémát átfogalmazzunk matematikai optimalizálási (lineáris programozási, még pontosabban egészértékű programozási) problémává, majd bevetjük az arra a területre ismert -- nagyon hatékony! -- algoritmusok valamelyikét. Ennek a matematikai részleteit egy [külön pontban](#a-kórháztelepítés-megoldása-lineáris-programozással) mesélem el. Ami számunkra fontos, hogy ez a módszer _drámaian_ gyorsabb, miközben továbbra is egzakt eredményt szolgáltat! Nézzük a futásidőket ezzel a módszerrel (idézzük fel a brute force megoldás számait!):
 
 ```{r}
 m <- nrow(durations)
@@ -608,6 +615,8 @@ Na de mennyi idő mindez? (Dobpergés:) `r round(sum(TSPsolItinary$Duration), 1)
 
 ## Továbbfejlesztési ötletek, kutatási lehetőségek
 
+Felsorolok néhány olyan lehetőséget, amelyek a fentiekben nyitva maradtak, de szerintem a vizsgálatuk érdekes és izgalmas lehet.
+
 - A közúti elérhetőség hosszú távú trendjének vizsgálata: elérhetőek régebbi térképek is az OSM-től? (Ha igen, meddig lehet visszamenni?) Ezzel vizsgálható, hogy javult-e a közúti elérhetőség, mennyit javult, mikor javult, mely területeken javult stb.
 - Útvonaltervezés (és az eredmények vizsgálata) nem leggyorsabb, hanem legrövidebb utazásra optimalizálva.
 - Más közlekedési módok (gyalog, kerékpár, tömegközlekedés, vasút stb.) vizsgálata. Ezek egy részét az OSRM minden további nélkül támogatja, mert van külön profil, így elvileg pillanatok alatt lecserélhető az egész számítás. Más esetek zűrösebbek, hiszen a vasúthoz vagy városi tömegközlekedéshez a menetrendre is szükség volna.
@@ -618,10 +627,11 @@ Na de mennyi idő mindez? (Dobpergés:) `r round(sum(TSPsolItinary$Duration), 1)
 - Szcenárióelemzések: mely összeköttetés elvesztése (baleset, katonai támadás stb.) jelenté a legnagyobb érvágást?
 - Heurisztikus TSP-megoldók tesztelése és egybevetése az egzakt optimummal.
 - Átlagos eljutási idő vizsgálatok úgy, hogy csak a saját megyét (vagy saját járást) nézzük.
-- Egyéb szükséglet-mutatók, például korcsoportos lélekszámok használata a telepítési probléma megoldásában.
-- Egyéb célfüggvények vizsgálata az optimális telepítési probléma megoldásában.
+- Egyéb szükséglet-mutatók, például korcsoportos lélekszámok használata a kórház-telepítési probléma megoldásában.
+- Egyéb célfüggvények vizsgálata az optimális kórház-telepítési probléma megoldásában.
+- A kórházak vizsgálata kapcsán külön kérdés, hogy itt a valóságban egy, helyenként ráadásul elég komplex beutalási rend érvényesül -- ennek figyelembevétele szintén érdekes kérdés lehet. A kórházak területi ellátási kötelezettségének alapvonalairól [egy másik írásomban](https://github.com/tamas-ferenci/KorhazakTeruletiEllatasiKotelezettsege) értekeztem dióhéjban.
 
-## Függelék: Az útvonaltervezés technikai részletei
+## Az útvonaltervezés technikai részletei
 
 ### Magyarország térképe
 
@@ -700,8 +710,8 @@ A fenti térkép birtokában összeszedhetjük egy listába Magyarország össze
 
 ```{r}
 if (!file.exists("hnt_letoltes_2022.xlsx"))
-  download.file("https://www.ksh.hu/docs/helysegnevtar/hnt_letoltes_2022.xlsx", "hnt_letoltes_2022.xlsx",
-                mode = "wb")
+  download.file("https://www.ksh.hu/docs/helysegnevtar/hnt_letoltes_2022.xlsx",
+                "hnt_letoltes_2022.xlsx", mode = "wb")
 ```
 
 Majd olvassuk be:
@@ -816,7 +826,7 @@ Itt az `osrmtable.js` tartalma:
 
 Ez a szkript egy `locs.csv` nevű fájlban várja a koordinátákat, majd az `osrmdurations.csv` és az `osrmdistances.csv` fájlokban adja vissza a megoldásokat (útvonalak idejei és távolságai minden pár között). Vigyázat, ez mindenképp időre van optimalizálva, tehát a távolság úgy értendő, hogy a legrövidebb idejű utak távolsága, nem úgy, hogy a legkisebb távolság.
 
-## Függelék: A kórháztelepítés megoldása lineáris programozással
+## A kórháztelepítés megoldása lineáris programozással
 
 ### A telepítési program felírása lineáris programozási feladatként
 
@@ -891,7 +901,8 @@ solGLPK <- function(durs, k) {
   result <- Rglpk::Rglpk_solve_LP(
     obj = c(c(t(durs)), rep(0, n)),
     mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     dir = c(rep("==", n), rep("<=", n*n), "=="),
     rhs = c(rep(1, n), rep(0, n*n), k),
@@ -917,7 +928,8 @@ solLPSOLVE <- function(durs, k) {
   n <- nrow(durs)
   
   mat1Sparse <- Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n))
-  mat2Sparse <- cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1))
+  mat2Sparse <- cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1))
   mat3Sparse <- Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)
   
   Amat <- rbind(mat1Sparse, mat2Sparse, mat3Sparse)
@@ -952,7 +964,8 @@ solCBC <- function(durs, k) {
   result <- rcbc::cbc_solve(
     obj = c(c(t(durs)), rep(0, n)),
     mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     row_lb = c(rep(1, n), rep(-Inf, n*n), k),
     row_ub = c(rep(1, n), rep(0, n*n), k),
@@ -984,7 +997,8 @@ solHIGHS <- function(durs, k) {
     lower = rep(0, n*n + n),
     upper = rep(1, n*n + n),
     A = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-              cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+              cbind(Matrix::Diagonal(n*n, 1),
+                    Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
               Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     lhs = c(rep(1, n), rep(-Inf, n*n), k),
     rhs = c(rep(1, n), rep(0, n*n), k),
@@ -1167,7 +1181,8 @@ if(!file.exists("LocationResult.rds")) {
       lower = rep(0, m*n + n),
       upper = rep(1, m*n + n),
       A = rbind(Matrix::sparseMatrix(i = rep(1:m, each = n), j = 1:(m*n), x = 1, dims = c(m, m*n + n)),
-                cbind(Matrix::Diagonal(m*n, 1), Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1)),
+                cbind(Matrix::Diagonal(m*n, 1),
+                      Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((m*n)+1):(m*n + n), x = 1)),
       lhs = c(rep(1, m), rep(-Inf, m*n), k),
       rhs = c(rep(1, m), rep(0, m*n), k),

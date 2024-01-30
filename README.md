@@ -19,8 +19,8 @@ Ferenci Tamás (<https://www.medstat.hu/>)
   települést?](#a-magyar-tsp-megoldása-hogy-lehet-leggyorsabban-körbejárni-az-összes-magyar-települést)
 - [Továbbfejlesztési ötletek, kutatási
   lehetőségek](#továbbfejlesztési-ötletek-kutatási-lehetőségek)
-- [Függelék: Az útvonaltervezés technikai
-  részletei](#függelék-az-útvonaltervezés-technikai-részletei)
+- [Az útvonaltervezés technikai
+  részletei](#az-útvonaltervezés-technikai-részletei)
   - [Magyarország térképe](#magyarország-térképe)
   - [Magyarország településeinek
     adatai](#magyarország-településeinek-adatai)
@@ -28,8 +28,8 @@ Ferenci Tamás (<https://www.medstat.hu/>)
   - [A térkép letöltése és
     előkészítése](#a-térkép-letöltése-és-előkészítése)
   - [Az útvonaltervezés végrehajtása](#az-útvonaltervezés-végrehajtása)
-- [Függelék: A kórháztelepítés megoldása lineáris
-  programozással](#függelék-a-kórháztelepítés-megoldása-lineáris-programozással)
+- [A kórháztelepítés megoldása lineáris
+  programozással](#a-kórháztelepítés-megoldása-lineáris-programozással)
   - [A telepítési program felírása lineáris programozási
     feladatként](#a-telepítési-program-felírása-lineáris-programozási-feladatként)
   - [Az egészértékű programozási feladat átírása számítógépen kezelhető
@@ -69,6 +69,10 @@ Ferenci Tamás (<https://www.medstat.hu/>)
   időt minimalizálva), ha 2 van? Ha 3? 10? 50? Megmutatom e feladat
   megoldását is, melyhez operációkutatási eszközöket fogunk bevetni; itt
   hosszabban beszélek ezen eredmény limitációiról is.
+- Ezek a vizsgálatok elvégezhetőek nem csak Magyarország településeire,
+  hanem egy településen belül is; ezt egy [egy másik
+  írásom](https://github.com/tamas-ferenci/BudapestiElerhetoseg) mutatja
+  be Budapest példáján.
 - Az összes számításomat és eredményemet teljesen transzparensen közlöm:
   mind a nyers adatokat megadom, mind a kódokat valamennyi számítás
   mögött, melyek együtt lehetővé teszik munkám teljes reprodukálását és
@@ -101,6 +105,12 @@ azt szeretnénk, hogy a leggyorsabban elérhető legyen, átlagosan, vagy
 legrosszabb esetben is?)
 
 Ezekre a kérdésekre fogok a jelen esszében megpróbálni válaszolni.
+
+(Természetesen ezek a kérdések nem csak a különböző települések közötti
+eljutás kapcsán tehetőek fel, hanem egy település különböző pontjai
+között eljutásra vonatkozóan is. Egy [másik
+írásom](https://github.com/tamas-ferenci/BudapestiElerhetoseg) ezt
+mutatja be Budapest példáján.)
 
 A problémakört szép nevén *közúti elérhetőségnek* lehetne nevezni.
 Valójában nincs szó nagy újdonságról, sokaknak ismerős lehet a régi
@@ -140,8 +150,7 @@ több fontos előnnyel is bír:
 
 A fenti rendszer felállításának és az útvonaltervezés végrehajtásának a
 technikai részleteit [külön
-pontban](#függelék-az-útvonaltervezés-technikai-részletei) tárgyalom
-meg.
+pontban](#az-útvonaltervezés-technikai-részletei) tárgyalom meg.
 
 Néhány megszorítást tegyünk. Az első, hogy most kizárólag *közúti*
 eljutással fogunk foglalkozni. Ugyanígy feltehető azonban a kérdés
@@ -384,89 +393,14 @@ if(!file.exists("durationsLong.zip")) zip("durationsLong.zip", "durationsLong.cs
 knitr::kable(head(durationsLong))
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Var1
-</th>
-<th style="text-align:left;">
-Var2
-</th>
-<th style="text-align:right;">
-Duration
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-0.000000
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abádszalók
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-2.872611
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaliget
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-2.215917
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abasár
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-2.079500
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaújalpár
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-3.468972
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaújkér
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-3.362333
-</td>
-</tr>
-</tbody>
-</table>
+| Var1       | Var2 | Duration |
+|:-----------|:-----|---------:|
+| Aba        | Aba  | 0.000000 |
+| Abádszalók | Aba  | 2.872611 |
+| Abaliget   | Aba  | 2.215917 |
+| Abasár     | Aba  | 2.079500 |
+| Abaújalpár | Aba  | 3.468972 |
+| Abaújkér   | Aba  | 3.362333 |
 
 Az adatállomány [ezen a linken](durationsLong.zip) külön is elérhetővé
 tettem tömörített CSV formátumban, hogy bárki tetszőleges saját
@@ -481,89 +415,14 @@ van):
 knitr::kable(head(durationsLong[Var1=="Budapest 01. kerület"]))
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Var1
-</th>
-<th style="text-align:left;">
-Var2
-</th>
-<th style="text-align:right;">
-Duration
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-0.9066667
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Abádszalók
-</td>
-<td style="text-align:right;">
-2.2096389
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Abaliget
-</td>
-<td style="text-align:right;">
-2.7583333
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Abasár
-</td>
-<td style="text-align:right;">
-1.2558333
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Abaújalpár
-</td>
-<td style="text-align:right;">
-2.6422500
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:left;">
-Abaújkér
-</td>
-<td style="text-align:right;">
-2.5355000
-</td>
-</tr>
-</tbody>
-</table>
+| Var1                 | Var2       |  Duration |
+|:---------------------|:-----------|----------:|
+| Budapest 01. kerület | Aba        | 0.9066667 |
+| Budapest 01. kerület | Abádszalók | 2.2096389 |
+| Budapest 01. kerület | Abaliget   | 2.7583333 |
+| Budapest 01. kerület | Abasár     | 1.2558333 |
+| Budapest 01. kerület | Abaújalpár | 2.6422500 |
+| Budapest 01. kerület | Abaújkér   | 2.5355000 |
 
 És most jön a lényeg. Hogyan ábrázoljuk ezt? Célszerűen térképen!
 Egyszerűen színezzük be az összes települést az itt látható idővel
@@ -799,16 +658,20 @@ for(loc in locs$NAME) {
                                 inherit.aes = FALSE, breaks = 1:10, skip = 0, color = "red")
   
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 ".png"), p, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 ".pdf"), p, width = 16, height = 9, device = cairo_pdf)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 "_izokron.png"), p1, width = 16, height = 9)
   ggsave(paste0("./maps/", stringi::stri_replace_all_fixed(iconv(loc, to = "ASCII//TRANSLIT"),
-                                                           c(" ", "-", "."), "", vectorize_all = FALSE),
+                                                           c(" ", "-", "."), "",
+                                                           vectorize_all = FALSE),
                 "_izokron.pdf"), p1, width = 16, height = 9, device = cairo_pdf)
 }
 ```
@@ -972,34 +835,9 @@ idő?
 knitr::kable(durationsLong[which.max(Duration)])
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Var1
-</th>
-<th style="text-align:left;">
-Var2
-</th>
-<th style="text-align:right;">
-Duration
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Kishódos
-</td>
-<td style="text-align:left;">
-Felsőszölnök
-</td>
-<td style="text-align:right;">
-7.426778
-</td>
-</tr>
-</tbody>
-</table>
+| Var1     | Var2         | Duration |
+|:---------|:-------------|---------:|
+| Kishódos | Felsőszölnök | 7.426778 |
 
 A válasz tehát: Felsőszölnök és Kishódos. Ez a két legtávolabbi magyar
 település közúton és menetidőről beszélve; majdnem 7 és fél óra az
@@ -1111,9 +949,9 @@ továbbra is Csobád esetére:
 
 ``` r
 durationsLongPop <- merge(durationsLong[, .(Var1, Helység.megnevezése = Var2, Duration)], HNTdata,
-                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Lakó.népesség)]
+                          sort = FALSE)[, .(Var1, Helység.megnevezése, Duration, Pop = Lakó.népesség)]
 
-ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Lakó.népesség)) +
+ggplot(durationsLongPop[Var1=="Csobád"], aes(x = Duration, weights = Pop)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -1130,7 +968,7 @@ emlegetett, központi elhelyezkedésű budapesti 1. kerülettel:
 
 ``` r
 ggplot(durationsLongPop[Var1%in%c("Csobád", "Budapest 01. kerület")],
-       aes(x = Duration, weights = Lakó.népesség, group = Var1, color = Var1)) +
+       aes(x = Duration, weights = Pop, group = Var1, color = Var1)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -1156,7 +994,7 @@ ritkábban:
 
 ``` r
 ggplot(durationsLongPop,
-       aes(x = Duration, weights = Lakó.népesség, group = Var1)) +
+       aes(x = Duration, weights = Pop, group = Var1)) +
   StatCompLab::stat_ewcdf(geom = "step", pad = FALSE, alpha = 0.01) +
   scale_y_continuous(label = scales::percent,
                      sec.axis = sec_axis(~ . * sum(HNTdata$Lakó.népesség),
@@ -1200,8 +1038,8 @@ A súlyozatlan átlagos közúti elérési idő az egyes településekről:
 
 ``` r
 AccessMetrics <- durationsLongPop[, .(unweighted = mean(Duration),
-                                      weighted = weighted.mean(Duration, Lakó.népesség),
-                                      max = max(Duration)) , .(NAME = Var1)]
+                                      weighted = weighted.mean(Duration, Pop),
+                                      max = max(Duration)), .(NAME = Var1)]
 
 contourplotter(merge(AccessMetrics[, .(NAME, value = unweighted)], locs, by = "NAME"), geodata,
                "Súlyozatlan átlagos\neljutási idő [h]")
@@ -1218,100 +1056,18 @@ knitr::kable(head(AccessMetrics[order(unweighted),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Súlyozatlan átlagos elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Tárnok
-</td>
-<td style="text-align:right;">
-2.14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Törökbálint
-</td>
-<td style="text-align:right;">
-2.15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 09. kerület
-</td>
-<td style="text-align:right;">
-2.16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 11. kerület
-</td>
-<td style="text-align:right;">
-2.16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 07. kerület
-</td>
-<td style="text-align:right;">
-2.17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budaörs
-</td>
-<td style="text-align:right;">
-2.17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 06. kerület
-</td>
-<td style="text-align:right;">
-2.17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 22. kerület
-</td>
-<td style="text-align:right;">
-2.17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Diósd
-</td>
-<td style="text-align:right;">
-2.17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Szigetszentmiklós
-</td>
-<td style="text-align:right;">
-2.18
-</td>
-</tr>
-</tbody>
-</table>
+| Település            | Súlyozatlan átlagos elérési idő (h) |
+|:---------------------|------------------------------------:|
+| Tárnok               |                                2.14 |
+| Törökbálint          |                                2.15 |
+| Budapest 09. kerület |                                2.16 |
+| Budapest 11. kerület |                                2.16 |
+| Budapest 07. kerület |                                2.17 |
+| Budaörs              |                                2.17 |
+| Budapest 06. kerület |                                2.17 |
+| Budapest 22. kerület |                                2.17 |
+| Diósd                |                                2.17 |
+| Szigetszentmiklós    |                                2.18 |
 
 A legrosszabb 10:
 
@@ -1322,100 +1078,18 @@ knitr::kable(tail(AccessMetrics[order(unweighted),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Súlyozatlan átlagos elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Tiszabecs
-</td>
-<td style="text-align:right;">
-4.77
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Zajta
-</td>
-<td style="text-align:right;">
-4.79
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Uszka
-</td>
-<td style="text-align:right;">
-4.81
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Milota
-</td>
-<td style="text-align:right;">
-4.81
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kispalád
-</td>
-<td style="text-align:right;">
-4.82
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Méhtelek
-</td>
-<td style="text-align:right;">
-4.84
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Magosliget
-</td>
-<td style="text-align:right;">
-4.87
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Nagyhódos
-</td>
-<td style="text-align:right;">
-4.89
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kishódos
-</td>
-<td style="text-align:right;">
-4.90
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Garbolc
-</td>
-<td style="text-align:right;">
-4.90
-</td>
-</tr>
-</tbody>
-</table>
+| Település  | Súlyozatlan átlagos elérési idő (h) |
+|:-----------|------------------------------------:|
+| Tiszabecs  |                                4.77 |
+| Zajta      |                                4.79 |
+| Uszka      |                                4.81 |
+| Milota     |                                4.81 |
+| Kispalád   |                                4.82 |
+| Méhtelek   |                                4.84 |
+| Magosliget |                                4.87 |
+| Nagyhódos  |                                4.89 |
+| Kishódos   |                                4.90 |
+| Garbolc    |                                4.90 |
 
 A lélekszámmal súlyozott átlagos közúti elérési idő:
 
@@ -1435,100 +1109,18 @@ knitr::kable(head(AccessMetrics[order(weighted),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Lélekszámmal súlyozott átlagos elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Budapest 09. kerület
-</td>
-<td style="text-align:right;">
-1.51
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 07. kerület
-</td>
-<td style="text-align:right;">
-1.52
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 06. kerület
-</td>
-<td style="text-align:right;">
-1.52
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 05. kerület
-</td>
-<td style="text-align:right;">
-1.54
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 14. kerület
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 23. kerület
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 01. kerület
-</td>
-<td style="text-align:right;">
-1.55
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 13. kerület
-</td>
-<td style="text-align:right;">
-1.56
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 11. kerület
-</td>
-<td style="text-align:right;">
-1.56
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Szigetszentmiklós
-</td>
-<td style="text-align:right;">
-1.57
-</td>
-</tr>
-</tbody>
-</table>
+| Település            | Lélekszámmal súlyozott átlagos elérési idő (h) |
+|:---------------------|-----------------------------------------------:|
+| Budapest 09. kerület |                                           1.51 |
+| Budapest 07. kerület |                                           1.52 |
+| Budapest 06. kerület |                                           1.52 |
+| Budapest 05. kerület |                                           1.54 |
+| Budapest 14. kerület |                                           1.55 |
+| Budapest 23. kerület |                                           1.55 |
+| Budapest 01. kerület |                                           1.55 |
+| Budapest 13. kerület |                                           1.56 |
+| Budapest 11. kerület |                                           1.56 |
+| Szigetszentmiklós    |                                           1.57 |
 
 A legrosszabb 10:
 
@@ -1539,100 +1131,18 @@ knitr::kable(tail(AccessMetrics[order(weighted),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Lélekszámmal súlyozott átlagos elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Tiszabecs
-</td>
-<td style="text-align:right;">
-4.24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Zajta
-</td>
-<td style="text-align:right;">
-4.26
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Uszka
-</td>
-<td style="text-align:right;">
-4.28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Milota
-</td>
-<td style="text-align:right;">
-4.28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kispalád
-</td>
-<td style="text-align:right;">
-4.30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Méhtelek
-</td>
-<td style="text-align:right;">
-4.31
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Magosliget
-</td>
-<td style="text-align:right;">
-4.34
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Nagyhódos
-</td>
-<td style="text-align:right;">
-4.36
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Garbolc
-</td>
-<td style="text-align:right;">
-4.37
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kishódos
-</td>
-<td style="text-align:right;">
-4.37
-</td>
-</tr>
-</tbody>
-</table>
+| Település  | Lélekszámmal súlyozott átlagos elérési idő (h) |
+|:-----------|-----------------------------------------------:|
+| Tiszabecs  |                                           4.24 |
+| Zajta      |                                           4.26 |
+| Uszka      |                                           4.28 |
+| Milota     |                                           4.28 |
+| Kispalád   |                                           4.30 |
+| Méhtelek   |                                           4.31 |
+| Magosliget |                                           4.34 |
+| Nagyhódos  |                                           4.36 |
+| Garbolc    |                                           4.37 |
+| Kishódos   |                                           4.37 |
 
 A worst case (minimax) elérési idő:
 
@@ -1652,100 +1162,18 @@ knitr::kable(head(AccessMetrics[order(max),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Legrosszabb elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Budapest 15. kerület
-</td>
-<td style="text-align:right;">
-3.76
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 14. kerület
-</td>
-<td style="text-align:right;">
-3.83
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 04. kerület
-</td>
-<td style="text-align:right;">
-3.84
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 16. kerület
-</td>
-<td style="text-align:right;">
-3.86
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Ecser
-</td>
-<td style="text-align:right;">
-3.86
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Mogyoród
-</td>
-<td style="text-align:right;">
-3.86
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Fót
-</td>
-<td style="text-align:right;">
-3.86
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Maglód
-</td>
-<td style="text-align:right;">
-3.86
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 06. kerület
-</td>
-<td style="text-align:right;">
-3.87
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Budapest 13. kerület
-</td>
-<td style="text-align:right;">
-3.87
-</td>
-</tr>
-</tbody>
-</table>
+| Település            | Legrosszabb elérési idő (h) |
+|:---------------------|----------------------------:|
+| Budapest 15. kerület |                        3.76 |
+| Budapest 14. kerület |                        3.83 |
+| Budapest 04. kerület |                        3.84 |
+| Budapest 16. kerület |                        3.86 |
+| Ecser                |                        3.86 |
+| Mogyoród             |                        3.86 |
+| Fót                  |                        3.86 |
+| Maglód               |                        3.86 |
+| Budapest 06. kerület |                        3.87 |
+| Budapest 13. kerület |                        3.87 |
 
 A legrosszabb 10:
 
@@ -1756,100 +1184,18 @@ knitr::kable(tail(AccessMetrics[order(max),
                   10), digits = 2)
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Település
-</th>
-<th style="text-align:right;">
-Legrosszabb elérési idő (h)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Kispalád
-</td>
-<td style="text-align:right;">
-7.35
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Méhtelek
-</td>
-<td style="text-align:right;">
-7.36
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Szakonyfalu
-</td>
-<td style="text-align:right;">
-7.39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Magosliget
-</td>
-<td style="text-align:right;">
-7.40
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Szalafő
-</td>
-<td style="text-align:right;">
-7.40
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kétvölgy
-</td>
-<td style="text-align:right;">
-7.41
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Nagyhódos
-</td>
-<td style="text-align:right;">
-7.42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Felsőszölnök
-</td>
-<td style="text-align:right;">
-7.42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Garbolc
-</td>
-<td style="text-align:right;">
-7.42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Kishódos
-</td>
-<td style="text-align:right;">
-7.43
-</td>
-</tr>
-</tbody>
-</table>
+| Település    | Legrosszabb elérési idő (h) |
+|:-------------|----------------------------:|
+| Kispalád     |                        7.35 |
+| Méhtelek     |                        7.36 |
+| Szakonyfalu  |                        7.39 |
+| Magosliget   |                        7.40 |
+| Szalafő      |                        7.40 |
+| Kétvölgy     |                        7.41 |
+| Nagyhódos    |                        7.42 |
+| Felsőszölnök |                        7.42 |
+| Garbolc      |                        7.42 |
+| Kishódos     |                        7.43 |
 
 Látható, hogy az összkép a használt mérőszámtól nagyban függetlenül
 meglehetősen egységes!
@@ -1952,8 +1298,8 @@ matematikai optimalizálási (lineáris programozási, még pontosabban
 egészértékű programozási) problémává, majd bevetjük az arra a területre
 ismert – nagyon hatékony! – algoritmusok valamelyikét. Ennek a
 matematikai részleteit egy [külön
-pontban](#függelék-a-kórháztelepítés-megoldása-lineáris-programozással)
-mesélem el. Ami számunkra fontos, hogy ez a módszer *drámaian* gyorsabb,
+pontban](#a-kórháztelepítés-megoldása-lineáris-programozással) mesélem
+el. Ami számunkra fontos, hogy ez a módszer *drámaian* gyorsabb,
 miközben továbbra is egzakt eredményt szolgáltat! Nézzük a futásidőket
 ezzel a módszerrel (idézzük fel a brute force megoldás számait!):
 
@@ -2386,6 +1732,9 @@ települését felkereshetjük autóval!
 
 ## Továbbfejlesztési ötletek, kutatási lehetőségek
 
+Felsorolok néhány olyan lehetőséget, amelyek a fentiekben nyitva
+maradtak, de szerintem a vizsgálatuk érdekes és izgalmas lehet.
+
 - A közúti elérhetőség hosszú távú trendjének vizsgálata: elérhetőek
   régebbi térképek is az OSM-től? (Ha igen, meddig lehet visszamenni?)
   Ezzel vizsgálható, hogy javult-e a közúti elérhetőség, mennyit javult,
@@ -2409,11 +1758,17 @@ települését felkereshetjük autóval!
 - Átlagos eljutási idő vizsgálatok úgy, hogy csak a saját megyét (vagy
   saját járást) nézzük.
 - Egyéb szükséglet-mutatók, például korcsoportos lélekszámok használata
-  a telepítési probléma megoldásában.
-- Egyéb célfüggvények vizsgálata az optimális telepítési probléma
+  a kórház-telepítési probléma megoldásában.
+- Egyéb célfüggvények vizsgálata az optimális kórház-telepítési probléma
   megoldásában.
+- A kórházak vizsgálata kapcsán külön kérdés, hogy itt a valóságban egy,
+  helyenként ráadásul elég komplex beutalási rend érvényesül – ennek
+  figyelembevétele szintén érdekes kérdés lehet. A kórházak területi
+  ellátási kötelezettségének alapvonalairól [egy másik
+  írásomban](https://github.com/tamas-ferenci/KorhazakTeruletiEllatasiKotelezettsege)
+  értekeztem dióhéjban.
 
-## Függelék: Az útvonaltervezés technikai részletei
+## Az útvonaltervezés technikai részletei
 
 ### Magyarország térképe
 
@@ -2526,8 +1881,8 @@ Helységnévkönyv.) Töltsük ezt le:
 
 ``` r
 if (!file.exists("hnt_letoltes_2022.xlsx"))
-  download.file("https://www.ksh.hu/docs/helysegnevtar/hnt_letoltes_2022.xlsx", "hnt_letoltes_2022.xlsx",
-                mode = "wb")
+  download.file("https://www.ksh.hu/docs/helysegnevtar/hnt_letoltes_2022.xlsx",
+                "hnt_letoltes_2022.xlsx", mode = "wb")
 ```
 
 Majd olvassuk be:
@@ -2581,89 +1936,14 @@ write.csv(locs[, c("X", "Y")], "osrmlocs.csv", row.names = FALSE)
 knitr::kable(head(locs))
 ```
 
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-NAME
-</th>
-<th style="text-align:right;">
-X
-</th>
-<th style="text-align:right;">
-Y
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Aba
-</td>
-<td style="text-align:right;">
-18.51912
-</td>
-<td style="text-align:right;">
-47.06457
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abádszalók
-</td>
-<td style="text-align:right;">
-20.62460
-</td>
-<td style="text-align:right;">
-47.45214
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaliget
-</td>
-<td style="text-align:right;">
-18.09622
-</td>
-<td style="text-align:right;">
-46.14251
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abasár
-</td>
-<td style="text-align:right;">
-20.01678
-</td>
-<td style="text-align:right;">
-47.81171
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaújalpár
-</td>
-<td style="text-align:right;">
-21.25843
-</td>
-<td style="text-align:right;">
-48.30330
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Abaújkér
-</td>
-<td style="text-align:right;">
-21.19252
-</td>
-<td style="text-align:right;">
-48.31008
-</td>
-</tr>
-</tbody>
-</table>
+| NAME       |        X |        Y |
+|:-----------|---------:|---------:|
+| Aba        | 18.51912 | 47.06457 |
+| Abádszalók | 20.62460 | 47.45214 |
+| Abaliget   | 18.09622 | 46.14251 |
+| Abasár     | 20.01678 | 47.81171 |
+| Abaújalpár | 21.25843 | 48.30330 |
+| Abaújkér   | 21.19252 | 48.31008 |
 
 ### Az OSRM letöltése és telepítése
 
@@ -2783,7 +2063,7 @@ Vigyázat, ez mindenképp időre van optimalizálva, tehát a távolság úgy
 értendő, hogy a legrövidebb idejű utak távolsága, nem úgy, hogy a
 legkisebb távolság.
 
-## Függelék: A kórháztelepítés megoldása lineáris programozással
+## A kórháztelepítés megoldása lineáris programozással
 
 ### A telepítési program felírása lineáris programozási feladatként
 
@@ -2978,7 +2258,8 @@ solGLPK <- function(durs, k) {
   result <- Rglpk::Rglpk_solve_LP(
     obj = c(c(t(durs)), rep(0, n)),
     mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     dir = c(rep("==", n), rep("<=", n*n), "=="),
     rhs = c(rep(1, n), rep(0, n*n), k),
@@ -3011,7 +2292,8 @@ solLPSOLVE <- function(durs, k) {
   n <- nrow(durs)
   
   mat1Sparse <- Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n))
-  mat2Sparse <- cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1))
+  mat2Sparse <- cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1))
   mat3Sparse <- Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)
   
   Amat <- rbind(mat1Sparse, mat2Sparse, mat3Sparse)
@@ -3050,7 +2332,8 @@ solCBC <- function(durs, k) {
   result <- rcbc::cbc_solve(
     obj = c(c(t(durs)), rep(0, n)),
     mat = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-                cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+                cbind(Matrix::Diagonal(n*n, 1),
+                      Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     row_lb = c(rep(1, n), rep(-Inf, n*n), k),
     row_ub = c(rep(1, n), rep(0, n*n), k),
@@ -3087,7 +2370,8 @@ solHIGHS <- function(durs, k) {
     lower = rep(0, n*n + n),
     upper = rep(1, n*n + n),
     A = rbind(Matrix::sparseMatrix(i = rep(1:n, each = n), j = 1:(n*n), x = 1, dims = c(n, n*n + n)),
-              cbind(Matrix::Diagonal(n*n, 1), Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
+              cbind(Matrix::Diagonal(n*n, 1),
+                    Matrix::sparseMatrix(i = 1:(n*n), j = rep(1:n, n), x = -1)),
               Matrix::sparseMatrix(i = rep(1, n), j = ((n*n)+1):(n*n + n), x = 1)),
     lhs = c(rep(1, n), rep(-Inf, n*n), k),
     rhs = c(rep(1, n), rep(0, n*n), k),
@@ -3331,7 +2615,8 @@ if(!file.exists("LocationResult.rds")) {
       lower = rep(0, m*n + n),
       upper = rep(1, m*n + n),
       A = rbind(Matrix::sparseMatrix(i = rep(1:m, each = n), j = 1:(m*n), x = 1, dims = c(m, m*n + n)),
-                cbind(Matrix::Diagonal(m*n, 1), Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1)),
+                cbind(Matrix::Diagonal(m*n, 1),
+                      Matrix::sparseMatrix(i = 1:(m*n), j = rep(1:n, m), x = -1)),
                 Matrix::sparseMatrix(i = rep(1, n), j = ((m*n)+1):(m*n + n), x = 1)),
       lhs = c(rep(1, m), rep(-Inf, m*n), k),
       rhs = c(rep(1, m), rep(0, m*n), k),
